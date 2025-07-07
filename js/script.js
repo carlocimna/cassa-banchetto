@@ -1,21 +1,23 @@
 // Definizione prodotti
 const products = {
   cucina: [
-    { id: 1, name: "Panino salame della duja", price: 4.00, img: "salame.jpg" },
     { id: 1, name: "Panino con salamella", price: 4.00, img: "salamella.jpg" },
-    { id: 2, name: "Panino würstel", price: 3.00, img: "wurstel.jpg" },
-    { id: 3, name: "Panino gorgonzola", price: 3.50, img: "gorgonzola.jpg" },
-    { id: 4, name: "Panino petto di pollo", price: 3.50, img: "tacchino.jpg" },
-    { id: 5, name: "Bistecca di coppa", price: 3.50, img: "bistecca.jpg" },
-    { id: 6, name: "Patatine", price: 3.00, img: "patatine.jpg" }
+    { id: 2, name: "Panino salame della duja", price: 4.00, img: "salame.jpg" },
+    { id: 3, name: "Panino würstel pollo/tacchino", price: 3.00, img: "wurstel.jpg" },
+    { id: 4, name: "Panino gorgonzola", price: 3.50, img: "gorgonzola.jpg" },
+    { id: 5, name: "Panino petto di pollo", price: 3.50, img: "tacchino.jpg" },
+    { id: 6, name: "Bistecca di coppa", price: 3.50, img: "bistecca.jpg" },
+    { id: 7, name: "Patatine", price: 3.00, img: "patatine.jpg" }
   ],
   bar: [
-    { id: 7, name: "Acqua 0.5L", price: 1.50, img: "acqua.jpg" },
-    { id: 8, name: "Bibita 0.3L", price: 2.50, img: "bibite.png" },
-    { id: 9, name: "Caffè", price: 2.50, img: "caffe.jpg" },
-    { id: 10, name: "Gelati", price: 2.50, img: "gelati.jpg" },
-    { id: 11, name: "Ghiaccioli", price: 3.00, img: "ghiaccioli.jpg" },
-    { id: 12, name: "Prosecco", price: 4.00, img: "prosecco.png" },{ id: 13, name: "Birra 0.33L", price: 3.00, img: "birra.jpg" },
+    { id: 8, name: "Caffè", price: 1.00, img: "caffe.jpg" },
+    { id: 9, name: "Acqua 0.5l", price: 1.00, img: "acqua.jpg" },
+    { id: 10, name: "Bibita in lattina", price: 2.50, img: "bibite.png" },
+    { id: 11, name: "Birra alla spina", price: 4.00, img: "birra.jpg" },
+    { id: 12, name: "Prosecco", price: 2.50, img: "prosecco.png" },
+    { id: 13, name: "Gelati", price: 2.00, img: "gelati.jpg" },
+    { id: 14, name: "Ghiaccioli", price: 1.00, img: "ghiaccioli.jpg" },
+    
   ]
 };
 
