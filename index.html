@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordinazioni Evento</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <button id="tab-cucina" class="tab active">Cucina</button>
+      <button id="tab-bar" class="tab">Bar</button>
+    </nav>
+  </header>
+
+  <div class="content">
+    <main>
+      <div class="products-grid" id="products-container">
+        <!-- Le card dei prodotti verranno inserite dinamicamente -->
+      </div>
+    </main>
+
+    <aside class="summary-panel">
+      <h2>Riepilogo</h2>
+      <div class="summary-section">
+        <h3>Cucina</h3>
+        <ul id="summary-cucina"></ul>
+      </div>
+      <div class="summary-section">
+        <h3>Bar</h3>
+        <ul id="summary-bar"></ul>
+      </div>
+      <div class="summary-total">
+        Totale € <span id="total-amount">0,00</span>
+      </div>
+      <button id="checkout" class="btn">Cassa</button>
+    </aside>
+  </div>
+
+  <!-- Modal pagamento -->
+  <div id="payment-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Conferma Ordine</h2>
+      <ul id="modal-items"></ul>
+      <div class="modal-total">
+        Totale da pagare: € <span id="modal-total">0,00</span>
+      </div>
+      <div class="modal-input">
+        <label for="cash-input">Contante ricevuto:</label>
+        <input type="number" id="cash-input" min="0" step="0.01">
+      </div>
+      <div class="modal-change">
+        <span id="change-message"></span>
+      </div>
+      <div class="modal-actions">
+        <button id="modal-edit" class="btn-secondary">Modifica</button>
+        <button id="modal-confirm" class="btn-primary" disabled>Conferma</button>
+      </div>
+      <button class="modal-close">×</button>
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
