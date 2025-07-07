@@ -186,6 +186,10 @@ summary-panel {
   margin-bottom: 16px;
   text-align: center;
 }
+button,a {
+  color: #333 !important;
+  text-decoration: none !important;
+}
 #modal-items {
   list-style: none;
   max-height: 200px;
