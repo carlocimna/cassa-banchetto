@@ -12,7 +12,7 @@ body {
   color: #333;
 }
 header {
-  padding: 16px;
+  padding: 12px;
 }
 nav {
   display: flex;
@@ -36,7 +36,7 @@ nav {
 .content {
   display: flex;
   gap: 16px;
-  padding: 16px;
+  padding: 0 16px;
 }
 main {
   flex: 3;
@@ -62,7 +62,7 @@ summary-panel {
 }
 .product-card img {
   width: 100%;
-  max-width: 140px;
+  max-width: 130px;
   margin: auto;
   display: block;
 }
@@ -186,7 +186,7 @@ summary-panel {
   margin-bottom: 16px;
   text-align: center;
 }
-button,a {
+button, a {
   color: #333 !important;
   text-decoration: none !important;
 }
