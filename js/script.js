@@ -250,7 +250,7 @@ checkoutBtn.addEventListener('click', () => {
   modalList.innerHTML = '';
   Object.values(selection).forEach(item => {
     const li = document.createElement('li');
-    li.textContent = `${item.name} × ${item.qty}`;
+    li.textContent = `${item.qty} ${item.name}`;
     modalList.appendChild(li);
   });
 
@@ -268,40 +268,73 @@ checkoutBtn.addEventListener('click', () => {
   modal.classList.remove('hidden');
 });
 
-// Calcolo resto alla digitazione
-/*cashInput.addEventListener('input', () => {
-  const paid = parseFloat(cashInput.value) || 0;
-  const total = parseFloat(modalTotal.textContent.replace(',', '.'));
-  if (paid >= total) {
-    const change = paid - total;
-    changeMsg.textContent = `Resto da dare: € ${change.toFixed(2).replace('.', ',')}`;
-    btnConfirm.disabled = false;
-  } else {
-    changeMsg.textContent = 'Contante insufficiente';
-    btnConfirm.disabled = true;
-  }
-}); */
+
 
 // Torna a modifica
 btnEdit.addEventListener('click', () => {
   modal.classList.add('hidden');
 });
 
-// Chiudi ordine e mostra riepilogo, poi resetta vista prodotti
-btnConfirm.addEventListener('click', () => {
-  // snapshot quantità selezionate (prima di svuotare)
+/**
+ * Prepara i dati dell'ordine e li salva su Firestore
+ * usando window.saveSplitOrder (definita in firebase-init.js).
+ * 
+ * @param {Object} selection - l'oggetto globale con gli articoli selezionati
+ * @returns {Promise<Object>} esito con numeri assegnati { parentId, bar, cucina }
+ */
+async function processAndSaveOrder(selection) {
+  // snapshot quantità/dettagli
   const qtyById = {};
+  const items = [];
   Object.values(selection).forEach(item => {
     qtyById[item.id] = (qtyById[item.id] || 0) + item.qty;
+    items.push({
+      id: item.id,
+      name: item.name,
+      qty: item.qty,
+      price: item.price,
+      category: item.category // 'cucina' | 'bar'
+    });
   });
 
-  // chiudiamo la modale pagamento
-  modal.classList.add('hidden');
+  const total  = Object.values(selection).reduce((s, i) => s + i.price * i.qty, 0);
+  const paid   = typeof bufferToAmount === 'function' ? bufferToAmount() : total;
+  const change = Math.max(0, paid - total);
 
-  // mostriamo il riepilogo
-  showOrderSummary({ qtyById });
+  // Struttura ordine
+  const order = {
+    items,
+    qtyById,
+    total, paid, change,
+    status: "paid",
+    deviceTimeISO: new Date().toISOString()
+  };
 
-  // reset selezione e UI principale
+  // Salvataggio su Firestore con split e numerazioni
+  const res = await window.saveSplitOrder(order);
+  return { res, qtyById };
+}
+// Chiudi ordine, SALVA su Firestore, mostra riepilogo, poi resetta
+btnConfirm.addEventListener('click', async () => {
+  modal.classList.add('hidden'); // chiude modale pagamento
+
+  try {
+    const { res, qtyById } = await processAndSaveOrder(selection);
+    console.log("Ordini creati:", res);
+
+    // mostra riepilogo tabelle
+    if (typeof showOrderSummary === 'function') {
+      showOrderSummary({ qtyById });
+      // se vuoi, aggiungi i numeri in intestazione:
+      // const h2 = summaryModal.querySelector('h2');
+      // h2.textContent = `Riepilogo Ordine — Cucina #${res.cucina?.number ?? '-'} | Bar #${res.bar?.number ?? '-'}`;
+    }
+  } catch (err) {
+    console.error("Errore salvataggio ordine:", err);
+    alert("Non sono riuscito a salvare l'ordine.");
+  }
+
+  // reset interfaccia principale
   Object.keys(selection).forEach(id => delete selection[id]);
   renderProducts();
 });
