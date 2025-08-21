@@ -151,6 +151,13 @@ const keypad      = document.getElementById('keypad');
 // Buffer importo in centesimi come stringa di cifre (es. "1234" => €12,34)
 let paidBuffer = "";
 
+// --- NUOVA MODALE RIEPILOGO ---
+const summaryModal   = document.getElementById('summary-modal');
+const sumCucinaBody  = document.getElementById('summary-cucina-body');
+const sumBarBody     = document.getElementById('summary-bar-body');
+const summaryClose   = document.getElementById('summary-close');
+const summaryX       = document.querySelector('.summary-x');
+
 function bufferToAmount() {
   // stringa -> numero in euro; vuoto => 0
   if (!paidBuffer) return 0;
@@ -179,6 +186,31 @@ function recomputeChange() {
     changeMsg.textContent = 'Contante insufficiente';
     btnConfirm.disabled = true;
   }
+}
+function showOrderSummary(orderSnapshot) {
+  // orderSnapshot: { qtyById: { [id]: n } }
+  const { qtyById } = orderSnapshot;
+
+  // utility per generare righe
+  function buildRows(list) {
+    // garantiamo l'ordine per id
+    const sorted = [...list].sort((a, b) => a.id - b.id);
+    return sorted.map(p => {
+      const q = qtyById[p.id] || 0;
+      const display = q > 0 ? String(q) : '-';
+      return `
+        <tr>
+          <td style="padding:6px; border-bottom:1px solid #f0f0f0;">${p.name}</td>
+          <td style="padding:6px; text-align:center; border-bottom:1px solid #f0f0f0;">${display}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  sumCucinaBody.innerHTML = buildRows(products.cucina);
+  sumBarBody.innerHTML    = buildRows(products.bar);
+
+  summaryModal.classList.remove('hidden');
 }
 
 // Tastierino numerico touch
@@ -255,14 +287,31 @@ btnEdit.addEventListener('click', () => {
   modal.classList.add('hidden');
 });
 
-// Chiudi ordine e resetta
+// Chiudi ordine e mostra riepilogo, poi resetta vista prodotti
 btnConfirm.addEventListener('click', () => {
-  // qui potresti inviare dati al server
-  // reset selezione
+  // snapshot quantità selezionate (prima di svuotare)
+  const qtyById = {};
+  Object.values(selection).forEach(item => {
+    qtyById[item.id] = (qtyById[item.id] || 0) + item.qty;
+  });
+
+  // chiudiamo la modale pagamento
+  modal.classList.add('hidden');
+
+  // mostriamo il riepilogo
+  showOrderSummary({ qtyById });
+
+  // reset selezione e UI principale
   Object.keys(selection).forEach(id => delete selection[id]);
   renderProducts();
-  modal.classList.add('hidden');
 });
+
 
 // Chiudi con X
 btnClose.addEventListener('click', () => modal.classList.add('hidden'));
+function closeSummary() {
+  summaryModal.classList.add('hidden');
+}
+
+summaryClose.addEventListener('click', closeSummary);
+summaryX.addEventListener('click', closeSummary);
