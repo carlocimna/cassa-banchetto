@@ -126,7 +126,7 @@ function renderSidebar() {
   secBar.innerHTML    = '';
   Object.values(selection).forEach(item => {
     const li = document.createElement('li');
-    li.textContent = `${item.qty} ${item.name}`;
+    li.innerHTML = `<span class="sideItemNum">${item.qty}</span> ${item.name}`;
     if (item.category === 'cucina') secCucina.appendChild(li);
     else secBar.appendChild(li);
   });
