@@ -164,6 +164,7 @@ const summaryTitleCucina = document.getElementById('header-cucina-title');
 const summaryTitleBar    = document.getElementById('header-bar-title');
 const summarySectionCucina = document.getElementById('summary-cucina-table');
 const summarySectionBar    = document.getElementById('summary-bar-table');
+const summaryPrint  = document.getElementById('summary-print');
 
 
 function bufferToAmount() {
@@ -209,7 +210,7 @@ function showOrderSummary(orderSnapshot) {
       const display = q > 0 ? String(q) : '-';
       return `
         <tr>
-          <td style="padding:10px; border-bottom:1px solid #f0f0f0;">${p.name}</td>
+          <td style="padding:10px; border-bottom:1px solid #f0f0f0;" colspan="2">${p.name}</td>
           <td style="padding:10px; text-align:center; border-bottom:1px solid #f0f0f0;">${display}</td>
         </tr>
       `;
@@ -339,14 +340,14 @@ btnConfirm.addEventListener('click', async () => {
 
     // aggiorna header con numeri ordine
     if (res.cucina) {
-      summaryTitleCucina.textContent = `Cucina #${res.cucina.number}`;
+      summaryTitleCucina.textContent = `N°${res.cucina.number}`;
       summarySectionCucina.style.display = '';
     } else {
       summarySectionCucina.style.display = 'none';
     }
 
     if (res.bar) {
-      summaryTitleBar.textContent = `Bar #${res.bar.number}`;
+      summaryTitleBar.textContent = `N°${res.bar.number}`;
       summarySectionBar.style.display = '';
     } else {
       summarySectionBar.style.display = 'none';
@@ -387,3 +388,38 @@ btnExact.addEventListener('click', () => {
 });
 summaryClose.addEventListener('click', closeSummary);
 summaryX.addEventListener('click', closeSummary);
+summaryPrint.addEventListener('click', () => {
+  const cucinaHTML = summarySectionCucina.style.display !== 'none'
+    ? summarySectionCucina.innerHTML
+    : '';
+  const barHTML = summarySectionBar.style.display !== 'none'
+    ? summarySectionBar.innerHTML
+    : '';
+
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+    <head>
+      <title>Riepilogo Ordine</title>
+      <style>
+        body { font-family: sans-serif; padding:20px; }
+        h3 { margin-top:20px; }
+        table { width:100%; border-collapse:collapse; margin-top:8px; }
+        th, td { border:1px solid #ddd; padding:6px; text-align:left; }
+        th { background:#f0f0f0; }
+        .page-break { page-break-before: always; }
+      </style>
+    </head>
+    <body>
+      ${cucinaHTML ? `<div>${cucinaHTML}</div>` : ''}
+      ${barHTML ? `<div class="page-break">${barHTML}</div>` : ''}
+    </body>
+    </html>
+  `);
+  win.document.close();
+
+  // chiudi automaticamente dopo la stampa
+  win.onafterprint = () => win.close();
+
+  win.print();
+});
