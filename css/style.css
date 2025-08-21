@@ -44,6 +44,11 @@ main {
 summary-panel {
   flex: 1;
 }
+
+th, td {
+  padding: 10px;
+}
+
 /* Griglia prodotti */
 .products-grid {
   display: grid;
@@ -251,6 +256,14 @@ button, a {
   font-weight: 500;
   cursor: pointer;
 }
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus-visible {
+  color: #141414 !important;
+  background-color: #e9a111 !important;
+  border-color: #e9a111 !important;
+}
+
+
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -264,6 +277,13 @@ button, a {
   border-radius: 24px;
   cursor: pointer;
 }
+.btn-secondary:hover, .btn-secondary:active, .btn-secondary:focus-visible {
+  color: #141414 !important;
+  background-color: #fff !important;
+  border-color: #e9a111 !important;
+}
+
+
 .modal-close {
   position: absolute;
   top: 18px;

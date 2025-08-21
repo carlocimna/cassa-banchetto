@@ -97,7 +97,7 @@ function renderSummary(rows) {
   // riepilogo ordini/incassi
   let html = `
     <div class="card mb-4">
-      <div class="card-header bg-dark text-white">Totali giornalieri</div>
+      <div class="card-header bg-dark text-white">TOTALI GIORNALIERI</div>
       <div class="card-body p-0">
         <table class="table mb-0">
           <tbody>
@@ -115,9 +115,9 @@ function renderSummary(rows) {
   const renderTable = (title, obj) => {
     let t = `
       <div class="card mb-4">
-        <div class="card-header">${title}</div>
+        <div class="card-header bg-dark text-white">${title}</div>
         <div class="card-body p-0">
-          <table class="table table-sm mb-0">
+          <table class="table mb-0">
             <thead class="table-light">
               <tr><th>Articolo</th><th class="text-center">Q.tà</th></tr>
             </thead>
@@ -143,8 +143,8 @@ function renderSummary(rows) {
     return t;
   };
 
-  html += renderTable("Articoli Cucina", articoliCucina);
-  html += renderTable("Articoli Bar", articoliBar);
+  html += renderTable("CUCINA", articoliCucina);
+  html += renderTable("BAR", articoliBar);
 
   summaryDiv.innerHTML = html;
 }
