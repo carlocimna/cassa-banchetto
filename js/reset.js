@@ -4,7 +4,7 @@ import {
   collection, query, limit, getDocs, writeBatch, doc, setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const ADMIN_PASSWORD = "cancella123"; // 🔑 CAMBIA QUI LA PASSWORD
+const ADMIN_PASSWORD = "382hdohddw8dhuhe"; // 🔑 CAMBIA QUI LA PASSWORD
 
 const btnReset = document.getElementById('btn-reset');
 const btnCheck = document.getElementById('btn-check');
@@ -59,6 +59,9 @@ async function resetDatabase() {
   }
 
   if (!confirm('Sei sicuro di voler ELIMINARE tutti gli ordini e azzerare i contatori?')) return;
+
+  //PER SICUREZZA PER ORA è DISATTIVA
+  return;
 
   btnReset.disabled = true;
   btnCheck.disabled = true;
