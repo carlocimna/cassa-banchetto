@@ -178,13 +178,19 @@ summary-panel {
   background: #fff;
   border-radius: 8px;
   padding: 24px;
-  max-width: 450px;
-  width: 90%;
+  width: 80%;
   position: relative;
 }
 .modal-content h2 {
-  margin-bottom: 16px;
+  margin-bottom: 30px;
   text-align: center;
+}
+.key {
+  height: 60px;
+  width: 120px;
+  font-size: 2rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
 }
 button, a {
   color: #333 !important;
@@ -195,13 +201,16 @@ button, a {
   max-height: 200px;
   overflow-y: auto;
   margin-bottom: 16px;
+  margin-top: 10px;
 }
 #modal-items li {
   margin-bottom: 8px;
+  font-size: 1.1rem;
 }
 .modal-total {
   font-weight: bold;
   margin-bottom: 16px;
+  font-size: 1.5rem;
 }
 .modal-input label {
   display: block;
@@ -217,7 +226,7 @@ button, a {
 .modal-change {
   min-height: 24px;
   margin-bottom: 16px;
-  font-size: 0.9rem;
+  font-size: 1.4rem;
 }
 .modal-actions {
   display: flex;
@@ -250,10 +259,10 @@ button, a {
 }
 .modal-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 18px;
+  right: 22px;
   background: none;
   border: none;
-  font-size: 1.2rem;
+  font-size: 2.2rem;
   cursor: pointer;
 }
