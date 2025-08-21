@@ -139,12 +139,80 @@ const checkoutBtn = document.getElementById('checkout');
 const modal       = document.getElementById('payment-modal');
 const modalList   = document.getElementById('modal-items');
 const modalTotal  = document.getElementById('modal-total');
-const cashInput   = document.getElementById('cash-input');
 const changeMsg   = document.getElementById('change-message');
 const btnConfirm  = document.getElementById('modal-confirm');
 const btnEdit     = document.getElementById('modal-edit');
 const btnClose    = document.querySelector('.modal-close');
 
+// NUOVO: elementi tastierino / display
+const cashDisplay = document.getElementById('cash-display');
+const keypad      = document.getElementById('keypad');
+
+// Buffer importo in centesimi come stringa di cifre (es. "1234" => €12,34)
+let paidBuffer = "";
+
+function bufferToAmount() {
+  // stringa -> numero in euro; vuoto => 0
+  if (!paidBuffer) return 0;
+  // Interpretazione “in centesimi”: "1" => 0.01, "10" => 0.10, "1234" => 12.34
+  const cents = parseInt(paidBuffer, 10);
+  return isNaN(cents) ? 0 : cents / 100;
+}
+
+function formatEuro(n) {
+  return n.toFixed(2).replace('.', ',');
+}
+
+function renderPaidDisplay() {
+  cashDisplay.textContent = `€ ${formatEuro(bufferToAmount())}`;
+}
+
+// Ricalcola resto e abilita/disabilita "Conferma"
+function recomputeChange() {
+  const paid = bufferToAmount();
+  const total = parseFloat(modalTotal.textContent.replace(',', '.')) || 0;
+  if (paid >= total) {
+    const change = paid - total;
+    changeMsg.textContent = `Resto da dare: € ${formatEuro(change)}`;
+    btnConfirm.disabled = false;
+  } else {
+    changeMsg.textContent = 'Contante insufficiente';
+    btnConfirm.disabled = true;
+  }
+}
+
+// Tastierino numerico touch
+if (keypad) {
+  keypad.addEventListener('click', (e) => {
+    const btn = e.target.closest('.key');
+    if (!btn) return;
+
+    const key = btn.dataset.key;
+    const action = btn.dataset.action;
+
+    if (key) {
+      // Aggiunge cifre al buffer; evita zeri iniziali inutili
+      if (key === '00') {
+        // "00" solo se c'è già qualcosa
+        if (paidBuffer) paidBuffer += '00';
+      } else {
+        // singola cifra 0-9
+        if (key === '0') {
+          paidBuffer = paidBuffer ? paidBuffer + '0' : ""; // niente '0' iniziale
+        } else {
+          paidBuffer += key;
+        }
+      }
+    } else if (action === 'back') {
+      paidBuffer = paidBuffer.slice(0, -1);
+    } else if (action === 'clear') {
+      paidBuffer = "";
+    }
+
+    renderPaidDisplay();
+    recomputeChange();
+  });
+}
 checkoutBtn.addEventListener('click', () => {
   // Popola lista articoli
   modalList.innerHTML = '';
@@ -153,13 +221,15 @@ checkoutBtn.addEventListener('click', () => {
     li.textContent = `${item.name} × ${item.qty}`;
     modalList.appendChild(li);
   });
+
   // Totale
   const total = Object.values(selection)
     .reduce((sum, i) => sum + i.price * i.qty, 0);
   modalTotal.textContent = total.toFixed(2).replace('.', ',');
 
-  // Reset input e pulsanti
-  cashInput.value = '';
+  // Reset display / messaggi / conferma
+  paidBuffer = "";
+  renderPaidDisplay();
   changeMsg.textContent = '';
   btnConfirm.disabled = true;
 
@@ -167,7 +237,7 @@ checkoutBtn.addEventListener('click', () => {
 });
 
 // Calcolo resto alla digitazione
-cashInput.addEventListener('input', () => {
+/*cashInput.addEventListener('input', () => {
   const paid = parseFloat(cashInput.value) || 0;
   const total = parseFloat(modalTotal.textContent.replace(',', '.'));
   if (paid >= total) {
@@ -178,7 +248,7 @@ cashInput.addEventListener('input', () => {
     changeMsg.textContent = 'Contante insufficiente';
     btnConfirm.disabled = true;
   }
-});
+}); */
 
 // Torna a modifica
 btnEdit.addEventListener('click', () => {
