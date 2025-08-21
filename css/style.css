@@ -11,7 +11,7 @@ body {
   background: #f2f2f2;
   color: #333;
 }
-header {
+nav {
   padding: 12px;
 }
 nav {
@@ -191,7 +191,6 @@ summary-panel {
 }
 .modal-content h2 {
   margin-bottom: 30px;
-  text-align: center;
 }
 .key {
   height: 60px;
