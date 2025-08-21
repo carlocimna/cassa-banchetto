@@ -211,7 +211,7 @@ function showOrderSummary(orderSnapshot) {
       return `
         <tr>
           <td style="padding:10px; border-bottom:1px solid #f0f0f0;" colspan="2">${p.name}</td>
-          <td style="padding:10px; text-align:center; border-bottom:1px solid #f0f0f0;">${display}</td>
+          <td style="padding:10px; text-align:center; border-bottom:1px solid #f0f0f0; font-weight:bold">${display}</td>
         </tr>
       `;
     }).join('');

@@ -7,21 +7,23 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header>
-    <nav>
-      <button id="tab-cucina" class="tab active">Cucina</button>
-      <button id="tab-bar" class="tab">Bar</button>
-    </nav>
-  </header>
 
   <div class="content">
     <main>
+      <nav>
+        <button id="tab-cucina" class="tab active">Cucina</button>
+        <button id="tab-bar" class="tab">Bar</button>
+      </nav>
       <div class="products-grid" id="products-container">
         <!-- Le card dei prodotti verranno inserite dinamicamente -->
       </div>
     </main>
 
-    <aside class="summary-panel">
+    <aside>
+      <nav>
+        <a href="/ordini.html" target="_blank" class="btn-secondary">Totale ordini</a>
+      </nav>
+      <div class="summary-panel">
       <h2>Riepilogo</h2>
       <div class="summary-section">
         <h3>Cucina</h3>
@@ -35,6 +37,7 @@
         Totale € <span id="total-amount">0,00</span>
       </div>
       <button id="checkout" class="btn">Cassa</button>
+    </div>
     </aside>
   </div>
 
