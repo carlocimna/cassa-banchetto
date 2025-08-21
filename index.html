@@ -80,13 +80,12 @@
             <button class="key" data-key="0">0</button>
             <button class="key" data-action="back">⌫</button>
 
-            <button class="key" data-action="clear" style="grid-column: span 3;">C</button>
+            <button class="key" data-action="clear">C</button>
+            <button id="btn-exact" class="key" style="width:248px; grid-column: span 2; font-size: 1.6rem;">
+              SOLDI GIUSTI
+            </button>
           </div>
-          <div style="margin-top:10px;">
-  <button id="btn-exact" class="key" style="width:100%; padding:12px; font-weight:bold; background:#4caf50; color:white; border:none; border-radius:6px;">
-    SOLDI GIUSTI
-  </button>
-</div>
+        
         </div> 
       </div>
       <div class="modal-actions" style="margin-top:12px;">
@@ -104,13 +103,13 @@
 
     <div class="summary-tables" style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
       <!-- Tabella Cucina -->
-      <div style="flex:1; min-width:260px;" id="summary-cucina-table">
+      <div style="flex:1; min-width:260px; max-width: 460px;" id="summary-cucina-table">
         <table class="report-table" style="width:100%; border-collapse:collapse;">
           <thead>
             <tr class="header-cucina">
               <th >Cucina</th>
-              <th id="header-cucina-title"></th>
-              <th class="report-qty">Quantità</th>
+              <th id="header-cucina-title" style="text-align: right;"></th>
+              <th class="report-qty" style="text-align: center;">Quantità</th>
             </tr>
           </thead>
           <tbody id="summary-cucina-body"></tbody>
@@ -118,13 +117,13 @@
       </div>
 
       <!-- Tabella Bar -->
-      <div style="flex:1; min-width:260px;" id="summary-bar-table">
+      <div style="flex:1; min-width:260px; max-width: 460px;" id="summary-bar-table">
         <table class="report-table" style="width:100%; border-collapse:collapse;">
           <thead>
             <tr class="header-bar">
               <th >Bar</th>
-              <th id="header-bar-title"></th>
-              <th class="report-qty">Quantità</th>
+              <th id="header-bar-title" style="text-align: right;"></th>
+              <th class="report-qty" style="text-align: center;">Quantità</th>
             </tr>
           </thead>
           <tbody id="summary-bar-body"></tbody>
@@ -134,7 +133,7 @@
 
     <div style="margin-top:14px; display:flex; gap:8px;">
   <button id="summary-close" class="btn-primary">Chiudi</button>
-  <button id="summary-print" class="btn-secondary">Stampa</button>
+  <!-- <button id="summary-print" class="btn-secondary">Stampa</button> -->
 </div>
 
 
@@ -144,7 +143,7 @@
 <!-- Loader overlay -->
 <div id="loader-overlay" class="hidden"
      style="position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:2000;">
-  <div style="background:white; padding:20px 30px; border-radius:12px; font-size:1.3rem; font-weight:bold; box-shadow:0 2px 6px rgba(0,0,0,0.3);">
+  <div style="background:white; padding:20px 30px; border-radius:12px; font-size:1.3rem; box-shadow:0 2px 6px rgba(0,0,0,0.3);">
     Salvataggio ordine in corso...
   </div>
 </div>
