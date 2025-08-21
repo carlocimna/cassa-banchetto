@@ -200,8 +200,8 @@ function showOrderSummary(orderSnapshot) {
       const display = q > 0 ? String(q) : '-';
       return `
         <tr>
-          <td style="padding:6px; border-bottom:1px solid #f0f0f0;">${p.name}</td>
-          <td style="padding:6px; text-align:center; border-bottom:1px solid #f0f0f0;">${display}</td>
+          <td style="padding:10px; border-bottom:1px solid #f0f0f0;">${p.name}</td>
+          <td style="padding:10px; text-align:center; border-bottom:1px solid #f0f0f0;">${display}</td>
         </tr>
       `;
     }).join('');
