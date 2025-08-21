@@ -143,6 +143,7 @@ const changeMsg   = document.getElementById('change-message');
 const btnConfirm  = document.getElementById('modal-confirm');
 const btnEdit     = document.getElementById('modal-edit');
 const btnClose    = document.querySelector('.modal-close');
+const btnExact   = document.getElementById('btn-exact');
 
 // NUOVO: elementi tastierino / display
 const cashDisplay = document.getElementById('cash-display');
@@ -158,6 +159,13 @@ const sumBarBody     = document.getElementById('summary-bar-body');
 const summaryClose   = document.getElementById('summary-close');
 const summaryX       = document.querySelector('.summary-x');
 
+const loaderOverlay = document.getElementById('loader-overlay');
+const summaryTitleCucina = document.getElementById('header-cucina-title');
+const summaryTitleBar    = document.getElementById('header-bar-title');
+const summarySectionCucina = document.getElementById('summary-cucina-table');
+const summarySectionBar    = document.getElementById('summary-bar-table');
+
+
 function bufferToAmount() {
   // stringa -> numero in euro; vuoto => 0
   if (!paidBuffer) return 0;
@@ -165,6 +173,7 @@ function bufferToAmount() {
   const cents = parseInt(paidBuffer, 10);
   return isNaN(cents) ? 0 : cents / 100;
 }
+
 
 function formatEuro(n) {
   return n.toFixed(2).replace('.', ',');
@@ -316,22 +325,41 @@ async function processAndSaveOrder(selection) {
 }
 // Chiudi ordine, SALVA su Firestore, mostra riepilogo, poi resetta
 btnConfirm.addEventListener('click', async () => {
-  modal.classList.add('hidden'); // chiude modale pagamento
+  modal.classList.add('hidden');       // chiudi modale pagamento
+  loaderOverlay.classList.remove('hidden');  // mostra loader
 
   try {
     const { res, qtyById } = await processAndSaveOrder(selection);
     console.log("Ordini creati:", res);
 
-    // mostra riepilogo tabelle
+    // aggiorna le tabelle riepilogo
     if (typeof showOrderSummary === 'function') {
       showOrderSummary({ qtyById });
-      // se vuoi, aggiungi i numeri in intestazione:
-      // const h2 = summaryModal.querySelector('h2');
-      // h2.textContent = `Riepilogo Ordine — Cucina #${res.cucina?.number ?? '-'} | Bar #${res.bar?.number ?? '-'}`;
     }
+
+    // aggiorna header con numeri ordine
+    if (res.cucina) {
+      summaryTitleCucina.textContent = `Cucina #${res.cucina.number}`;
+      summarySectionCucina.style.display = '';
+    } else {
+      summarySectionCucina.style.display = 'none';
+    }
+
+    if (res.bar) {
+      summaryTitleBar.textContent = `Bar #${res.bar.number}`;
+      summarySectionBar.style.display = '';
+    } else {
+      summarySectionBar.style.display = 'none';
+    }
+
+    // mostra riepilogo
+    summaryModal.classList.remove('hidden');
+
   } catch (err) {
     console.error("Errore salvataggio ordine:", err);
     alert("Non sono riuscito a salvare l'ordine.");
+  } finally {
+    loaderOverlay.classList.add('hidden');  // sempre nascondi loader
   }
 
   // reset interfaccia principale
@@ -345,6 +373,17 @@ btnClose.addEventListener('click', () => modal.classList.add('hidden'));
 function closeSummary() {
   summaryModal.classList.add('hidden');
 }
+// Tasto "SOLDI GIUSTI"
+btnExact.addEventListener('click', () => {
+  // prendi totale dall'elemento modale
+  const total = parseFloat(modalTotal.textContent.replace(',', '.')) || 0;
 
+  // converti in centesimi e metti in buffer
+  paidBuffer = String(Math.round(total * 100));
+
+  // aggiorna display e controlli
+  renderPaidDisplay();
+  recomputeChange();
+});
 summaryClose.addEventListener('click', closeSummary);
 summaryX.addEventListener('click', closeSummary);
