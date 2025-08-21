@@ -100,12 +100,11 @@
     <div class="summary-tables" style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
       <!-- Tabella Cucina -->
       <div style="flex:1; min-width:260px;">
-        <h3>Cucina</h3>
         <table class="report-table" style="width:100%; border-collapse:collapse;">
           <thead>
-            <tr>
-              <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">Articolo</th>
-              <th style="text-align:center; border-bottom:1px solid #ddd; padding:6px; width:110px;">Quantità</th>
+            <tr class="header-cucina">
+              <th>Cucina</th>
+              <th>Quantità</th>
             </tr>
           </thead>
           <tbody id="summary-cucina-body"></tbody>
@@ -114,12 +113,11 @@
 
       <!-- Tabella Bar -->
       <div style="flex:1; min-width:260px;">
-        <h3>Bar</h3>
         <table class="report-table" style="width:100%; border-collapse:collapse;">
           <thead>
-            <tr>
-              <th style="text-align:left; border-bottom:1px solid #ddd; padding:6px;">Articolo</th>
-              <th style="text-align:center; border-bottom:1px solid #ddd; padding:6px; width:110px;">Quantità</th>
+            <tr class="header-bar">
+              <th>Bar</th>
+              <th>Quantità</th>
             </tr>
           </thead>
           <tbody id="summary-bar-body"></tbody>
@@ -127,8 +125,8 @@
       </div>
     </div>
 
-    <div style="margin-top:14px; display:flex; gap:8px;">
-      <button id="summary-close" class="btn">Chiudi</button>
+    <div style="margin-top:14px; display:flex; gap:8px; justify-content: end;">
+      <button id="summary-close" class="btn-primary">Chiudi</button>
     </div>
 
     <button class="modal-close summary-x">×</button>
