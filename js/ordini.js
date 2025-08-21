@@ -1,5 +1,6 @@
 // js/ordini.js
-import { whenAuthed, getOrdersForDay } from './firebase-init.js';
+import { db, whenAuthed, getOrdersForDay } from './firebase-init.js';
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const ordersContainer = document.getElementById('orders-accordion');
 const currentDateSpan = document.getElementById('current-date');
@@ -56,6 +57,12 @@ function renderRows(rows) {
            data-bs-parent="#orders-accordion">
         <div class="accordion-body">
           ${itemsHtml}
+          <div class="d-flex justify-content-end mt-3">
+            <button style="color: white !important;" class="btn btn-sm btn-danger btn-delete"
+                    data-id="${r.id}" data-type="${r.type}" data-number="${r.number}">
+              Elimina
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -157,7 +164,9 @@ async function loadDay() {
   currentDateSpan.textContent = currentDate.toLocaleDateString('it-IT');
   try {
     await whenAuthed;
-    const rows = await getOrdersForDay(currentDate);
+    let rows = await getOrdersForDay(currentDate);
+     // ✅ escludi quelli con deleted === true
+    rows = rows.filter(r => !r.deleted);
     renderRows(rows);
     renderSummary(rows);
   } catch (e) {
@@ -178,6 +187,27 @@ nextBtn.addEventListener('click', () => {
   currentDate.setDate(currentDate.getDate() + 1);
   loadDay();
 });
+ordersContainer.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.btn-delete');
+  if (!btn) return;
 
+  const id   = btn.dataset.id;
+  const type = btn.dataset.type; // "BAR" | "CUCINA"
+  const number = btn.dataset.number; 
+  const coll = type === 'BAR' ? 'orders_bar' : 'orders_cucina';
+
+  if (!confirm(`Vuoi davvero eliminare l'ordine ${type} #${number}?`)) return;
+
+  try {
+    await whenAuthed;
+    await setDoc(doc(db, coll, id), { deleted: true }, { merge: true });
+
+    // Ricarica la giornata per aggiornare elenco e riepilogo
+    await loadDay();
+  } catch (err) {
+    console.error(err);
+    alert('Errore durante l’eliminazione.');
+  }
+});
 // avvio
 loadDay();
