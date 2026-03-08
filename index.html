@@ -156,6 +156,15 @@
   <button onclick="stampa()">Stampa test</button>
 
 <script>
+const ws = new WebSocket("ws://127.0.0.1:40213/");
+
+ws.onopen = () => {
+  alert("connesso");
+  ws.send("Test stampa\n\n\n");
+};
+
+ws.onerror = (e) => alert(e);
+
 function stampa() {
   const socket = new WebSocket("ws://127.0.0.1:40213/");
   socket.binaryType = "arraybuffer";
