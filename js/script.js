@@ -419,8 +419,8 @@ summaryPrint.addEventListener('click', () => {
     </body>
     </html>
   `);
-  win.document.close();
+  //win.document.close();
   // chiudi automaticamente dopo la stampa
-  win.onafterprint = () => win.close();
-  win.print();
+ // win.onafterprint = () => win.close();
+ // win.print();
 });
