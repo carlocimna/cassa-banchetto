@@ -419,8 +419,11 @@ summaryPrint.addEventListener('click', () => {
     </body>
     </html>
   `);
-  //win.document.close();
-  // chiudi automaticamente dopo la stampa
-  win.onafterprint = () => win.close();
-  //win.print();
+  win.document.close();
+  // aspetta 3 secondi prima di stampare
+  setTimeout(() => {
+    win.print();
+    // chiudi automaticamente dopo la stampa
+    win.onafterprint = () => win.close();
+  }, 3000);
 });
