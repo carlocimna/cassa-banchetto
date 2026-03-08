@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cassa Banchetto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cassa Banchetto</h1>
+        <p>Benvenuto</p>
+        <script>
+            const ws = new WebSocket("ws://192.168.1.19:40213/");
+function printRawBt() {
+  
+  ws.binaryType = "arraybuffer";
+
+  ws.onopen = () => {
+    // ESC @        initialize
+    // testo        "Ciao\n"
+    // GS V 0       full cut
+    const bytes = new Uint8Array([
+      0x1B, 0x40,
+      0x43, 0x69, 0x61, 0x6F, 0x0A,
+      0x1D, 0x56, 0x00
+    ]);
+
+    ws.send(bytes.buffer);
+    ws.close(1000, "done");
+  };
+
+  ws.onmessage = (ev) => {
+    console.log("Risposta:", ev.data);
+  };
+
+  ws.onerror = (err) => {
+    console.error("WebSocket error", err);
+  };
+
+  ws.onclose = () => {
+    console.log("Socket chiusa");
+  };
+}
+</script>
+
+<button onclick="printRawBt()">Stampa</button>
+
+<a href="rawbt://print?text=Hello%20World">Stampa raw</a>
+    </div>
+</body>
+</html>
