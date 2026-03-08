@@ -158,6 +158,13 @@ const sumCucinaBody  = document.getElementById('summary-cucina-body');
 const sumBarBody     = document.getElementById('summary-bar-body');
 const summaryClose   = document.getElementById('summary-close');
 const summaryX       = document.querySelector('.summary-x');
+const summaryPrint   = document.getElementById('summary-print');
+
+const loaderOverlay = document.getElementById('loader-overlay');
+const summaryTitleCucina = document.getElementById('header-cucina-title');
+const summaryTitleBar    = document.getElementById('header-bar-title');
+const summarySectionCucina = document.getElementById('summary-cucina-table');
+const summarySectionBar    = document.getElementById('summary-bar-table');
 
 // Variabili globali per il riepilogo corrente
 let currentSummary = { cucinaItems: [], barItems: [], cucinaNumber: null, barNumber: null };
