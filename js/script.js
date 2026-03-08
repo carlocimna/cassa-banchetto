@@ -205,11 +205,11 @@ function showOrderSummary(orderSnapshot) {
 
   // utility per generare righe
   function buildRows(list) {
-    // garantiamo l'ordine per id
-    const sorted = [...list].sort((a, b) => a.id - b.id);
+    // garantiamo l'ordine per id e filtriamo solo voci con qty > 0
+    const sorted = [...list].sort((a, b) => a.id - b.id).filter(p => (qtyById[p.id] || 0) > 0);
     return sorted.map(p => {
       const q = qtyById[p.id] || 0;
-      const display = q > 0 ? String(q) : '-';
+      const display = String(q); // sempre qty > 0, quindi no '-'
       return `
         <tr>
           <td style="padding:10px; border-bottom:1px solid #f0f0f0;" colspan="2">${p.name}</td>
@@ -405,10 +405,10 @@ summaryPrint.addEventListener('click', () => {
     <head>
       <title>Riepilogo Ordine</title>
       <style>
-        body { font-family: sans-serif; padding:20px; }
-        h3 { margin-top:20px; }
-        table { width:100%; border-collapse:collapse; margin-top:8px; }
-        th, td { border:1px solid #ddd; padding:6px; text-align:left; }
+        body { font-family: sans-serif; padding:0;margin:0; }
+        h3 { margin-top:0 }
+        table { width:100%; border-collapse:collapse; margin-top:0px; }
+        th, td { border:1px solid #ddd; padding:2px; text-align:left; }
         th { background:#f0f0f0; }
         .page-break { page-break-before: always; }
       </style>
@@ -421,6 +421,6 @@ summaryPrint.addEventListener('click', () => {
   `);
   //win.document.close();
   // chiudi automaticamente dopo la stampa
- // win.onafterprint = () => win.close();
- // win.print();
+  win.onafterprint = () => win.close();
+  win.print();
 });
