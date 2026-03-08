@@ -388,7 +388,43 @@ btnExact.addEventListener('click', () => {
 });
 summaryClose.addEventListener('click', closeSummary);
 summaryX.addEventListener('click', closeSummary);
-summaryPrint.addEventListener('click', () => {
+// helper that attempts to send raw text/HTML to a BLE printer
+// NOTE: Most low‑cost portable printers speak only *classic* Bluetooth
+// (SPP) and are **not** reachable from the Web Bluetooth API. The code
+// below shows the typical pattern for a BLE device; you'll need to
+// supply the correct service/characteristic UUIDs for your model.
+async function printViaBluetooth(text) {
+  if (!navigator.bluetooth) {
+    throw new Error('Web Bluetooth API not supported');
+  }
+
+  // request a device (the filter can be tightened to your printer name)
+  const device = await navigator.bluetooth.requestDevice({
+    acceptAllDevices: true,
+    optionalServices: [
+      /* replace with your printer's service UUID */
+      '000018f0-0000-1000-8000-00805f9b34fb'
+    ]
+  });
+
+  const server = await device.gatt.connect();
+  const service = await server.getPrimaryService(
+    /* printer service UUID */
+    '000018f0-0000-1000-8000-00805f9b34fb'
+  );
+  const characteristic = await service.getCharacteristic(
+    /* write characteristic */
+    '00002af1-0000-1000-8000-00805f9b34fb'
+  );
+
+  // convert string to bytes (you may need an ESC/POS encoder)
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  await characteristic.writeValue(data);
+  await server.disconnect();
+}
+
+summaryPrint.addEventListener('click', async () => {
   const cucinaHTML = summarySectionCucina.style.display !== 'none'
     ? summarySectionCucina.innerHTML
     : '';
@@ -396,8 +432,8 @@ summaryPrint.addEventListener('click', () => {
     ? summarySectionBar.innerHTML
     : '';
 
-  const win = window.open('', '_blank');
-  win.document.write(`
+  // build the printable receipt string once so we can reuse it
+  const receiptHtml = `
     <html>
     <head>
       <title>Riepilogo Ordine</title>
@@ -415,11 +451,22 @@ summaryPrint.addEventListener('click', () => {
       ${barHTML ? `<div class="page-break">${barHTML}</div>` : ''}
     </body>
     </html>
-  `);
+  `;
+
+  // first try Bluetooth; if it fails fall back to regular print dialog
+  if (navigator.bluetooth) {
+    try {
+      await printViaBluetooth(receiptHtml);
+      return; // success, nothing else to do
+    } catch (err) {
+      console.warn('Bluetooth printing failed, falling back to window.print()', err);
+    }
+  }
+
+  // standard browser print
+  const win = window.open('', '_blank');
+  win.document.write(receiptHtml);
   win.document.close();
-
-  // chiudi automaticamente dopo la stampa
   win.onafterprint = () => win.close();
-
   win.print();
 });
