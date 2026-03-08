@@ -159,12 +159,8 @@ const sumBarBody     = document.getElementById('summary-bar-body');
 const summaryClose   = document.getElementById('summary-close');
 const summaryX       = document.querySelector('.summary-x');
 
-const loaderOverlay = document.getElementById('loader-overlay');
-const summaryTitleCucina = document.getElementById('header-cucina-title');
-const summaryTitleBar    = document.getElementById('header-bar-title');
-const summarySectionCucina = document.getElementById('summary-cucina-table');
-const summarySectionBar    = document.getElementById('summary-bar-table');
-const summaryPrint  = document.getElementById('summary-print');
+// Variabili globali per il riepilogo corrente
+let currentSummary = { cucinaItems: [], barItems: [], cucinaNumber: null, barNumber: null };
 
 
 function bufferToAmount() {
@@ -338,6 +334,12 @@ btnConfirm.addEventListener('click', async () => {
       showOrderSummary({ qtyById });
     }
 
+    // Popola currentSummary per la stampa
+    currentSummary.cucinaItems = products.cucina.filter(p => qtyById[p.id]).map(p => ({ name: p.name, qty: qtyById[p.id] }));
+    currentSummary.barItems = products.bar.filter(p => qtyById[p.id]).map(p => ({ name: p.name, qty: qtyById[p.id] }));
+    currentSummary.cucinaNumber = res.cucina ? res.cucina.number : null;
+    currentSummary.barNumber = res.bar ? res.bar.number : null;
+
     // aggiorna header con numeri ordine
     if (res.cucina) {
       summaryTitleCucina.textContent = `N°${res.cucina.number}`;
@@ -388,85 +390,75 @@ btnExact.addEventListener('click', () => {
 });
 summaryClose.addEventListener('click', closeSummary);
 summaryX.addEventListener('click', closeSummary);
-// helper that attempts to send raw text/HTML to a BLE printer
-// NOTE: Most low‑cost portable printers speak only *classic* Bluetooth
-// (SPP) and are **not** reachable from the Web Bluetooth API. The code
-// below shows the typical pattern for a BLE device; you'll need to
-// supply the correct service/characteristic UUIDs for your model.
-async function printViaBluetooth(text) {
-  if (!navigator.bluetooth) {
-    throw new Error('Web Bluetooth API not supported');
+// Configurazione per RawBT
+const RAWBT_IP = 'localhost'; // RawBT è sul tablet stesso
+const RAWBT_PORT = 40213;
+
+// Funzione per generare dati ESC/POS per la ricevuta
+function generateReceiptData(cucinaItems, barItems, cucinaNumber, barNumber) {
+  let data = '\x1b@'; // Inizializza stampante
+
+  // Intestazione
+  data += '\x1ba\x01'; // Allinea centro
+  data += 'RIEPILOGO ORDINE\n\n';
+  data += '\x1ba\x00'; // Allinea sinistra
+
+  if (cucinaNumber) {
+    data += `Ordine Cucina N°${cucinaNumber}\n`;
+    cucinaItems.forEach(item => {
+      data += `${item.qty} x ${item.name}\n`;
+    });
+    data += '\n';
   }
 
-  // request a device (the filter can be tightened to your printer name)
-  const device = await navigator.bluetooth.requestDevice({
-    acceptAllDevices: true,
-    optionalServices: [
-      /* replace with your printer's service UUID */
-      '000018f0-0000-1000-8000-00805f9b34fb'
-    ]
-  });
+  if (barNumber) {
+    data += `Ordine Bar N°${barNumber}\n`;
+    barItems.forEach(item => {
+      data += `${item.qty} x ${item.name}\n`;
+    });
+    data += '\n';
+  }
 
-  const server = await device.gatt.connect();
-  const service = await server.getPrimaryService(
-    /* printer service UUID */
-    '000018f0-0000-1000-8000-00805f9b34fb'
-  );
-  const characteristic = await service.getCharacteristic(
-    /* write characteristic */
-    '00002af1-0000-1000-8000-00805f9b34fb'
-  );
+  data += '\x1bd\x03'; // Taglia carta
 
-  // convert string to bytes (you may need an ESC/POS encoder)
-  const encoder = new TextEncoder();
-  const data = encoder.encode(text);
-  await characteristic.writeValue(data);
-  await server.disconnect();
+  return data;
+}
+
+// Funzione per stampare via RawBT
+async function printViaRawBT(cucinaItems, barItems, cucinaNumber, barNumber) {
+  const data = generateReceiptData(cucinaItems, barItems, cucinaNumber, barNumber);
+
+  try {
+    const response = await fetch(`http://${RAWBT_IP}:${RAWBT_PORT}/print`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream'
+      },
+      body: data
+    });
+
+    if (!response.ok) {
+      throw new Error(`Errore HTTP: ${response.status}`);
+    }
+
+    console.log('Stampa inviata con successo a RawBT');
+  } catch (error) {
+    console.error('Errore nella stampa via RawBT:', error);
+    throw error;
+  }
 }
 
 summaryPrint.addEventListener('click', async () => {
-  const cucinaHTML = summarySectionCucina.style.display !== 'none'
-    ? summarySectionCucina.innerHTML
-    : '';
-  const barHTML = summarySectionBar.style.display !== 'none'
-    ? summarySectionBar.innerHTML
-    : '';
-
-  // build the printable receipt string once so we can reuse it
-  const receiptHtml = `
-    <html>
-    <head>
-      <title>Riepilogo Ordine</title>
-      <style>
-        body { font-family: sans-serif; padding:20px; }
-        h3 { margin-top:20px; }
-        table { width:100%; border-collapse:collapse; margin-top:8px; }
-        th, td { border:1px solid #ddd; padding:6px; text-align:left; }
-        th { background:#f0f0f0; }
-        .page-break { page-break-before: always; }
-      </style>
-    </head>
-    <body>
-      ${cucinaHTML ? `<div>${cucinaHTML}</div>` : ''}
-      ${barHTML ? `<div class="page-break">${barHTML}</div>` : ''}
-    </body>
-    </html>
-  `;
-
-  // first try Bluetooth; if it fails fall back to regular print dialog
-  if (navigator.bluetooth) {
-    try {
-      await printViaBluetooth(receiptHtml);
-      return; // success, nothing else to do
-    } catch (err) {
-      console.warn('Bluetooth printing failed, falling back to window.print()', err);
-    }
+  try {
+    await printViaRawBT(
+      currentSummary.cucinaItems,
+      currentSummary.barItems,
+      currentSummary.cucinaNumber,
+      currentSummary.barNumber
+    );
+    alert('Stampa inviata con successo!');
+  } catch (error) {
+    console.error('Errore nella stampa:', error);
+    alert('Errore nella stampa: ' + error.message);
   }
-
-  // standard browser print
-  const win = window.open('', '_blank');
-  win.document.write(receiptHtml);
-  win.document.close();
-  win.onafterprint = () => win.close();
-  win.print();
 });
