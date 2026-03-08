@@ -153,33 +153,6 @@
 <script type="module" src="js/firebase-init.js"></script>
   <script src="js/script.js"></script>
 
-  <button onclick="stampa()">Stampa test</button>
-
-<script>
-const ws = new WebSocket("ws://127.0.0.1:40213/");
-
-ws.onopen = () => {
-  alert("connesso");
-  ws.send("Test stampa\n\n\n");
-};
-
-ws.onerror = (e) => alert(e);
-
-function stampa() {
-  const socket = new WebSocket("ws://127.0.0.1:40213/");
-  socket.binaryType = "arraybuffer";
-
-  socket.onopen = function () {
-    const testo = "Test stampa\nQian T80\n\n\n";
-    socket.send(testo);
-    socket.close(1000, "done");
-  };
-
-  socket.onerror = function (e) {
-    console.error("Errore WebSocket RawBT", e);
-  };
-}
-</script>
 
 </body>
 </html>

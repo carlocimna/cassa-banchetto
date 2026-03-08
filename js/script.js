@@ -166,8 +166,7 @@ const summaryTitleBar    = document.getElementById('header-bar-title');
 const summarySectionCucina = document.getElementById('summary-cucina-table');
 const summarySectionBar    = document.getElementById('summary-bar-table');
 
-// Variabili globali per il riepilogo corrente
-let currentSummary = { cucinaItems: [], barItems: [], cucinaNumber: null, barNumber: null };
+// (no global summary object needed when using standard print)
 
 
 function bufferToAmount() {
@@ -341,12 +340,6 @@ btnConfirm.addEventListener('click', async () => {
       showOrderSummary({ qtyById });
     }
 
-    // Popola currentSummary per la stampa
-    currentSummary.cucinaItems = products.cucina.filter(p => qtyById[p.id]).map(p => ({ name: p.name, qty: qtyById[p.id] }));
-    currentSummary.barItems = products.bar.filter(p => qtyById[p.id]).map(p => ({ name: p.name, qty: qtyById[p.id] }));
-    currentSummary.cucinaNumber = res.cucina ? res.cucina.number : null;
-    currentSummary.barNumber = res.bar ? res.bar.number : null;
-
     // aggiorna header con numeri ordine
     if (res.cucina) {
       summaryTitleCucina.textContent = `N°${res.cucina.number}`;
@@ -397,75 +390,37 @@ btnExact.addEventListener('click', () => {
 });
 summaryClose.addEventListener('click', closeSummary);
 summaryX.addEventListener('click', closeSummary);
-// Configurazione per RawBT
-const RAWBT_IP = 'localhost'; // RawBT è sul tablet stesso
-const RAWBT_PORT = 40213;
+// stampa standard del riepilogo, usa la modale generata
+summaryPrint.addEventListener('click', () => {
+  const cucinaHTML = summarySectionCucina.style.display !== 'none'
+    ? summarySectionCucina.innerHTML
+    : '';
+  const barHTML = summarySectionBar.style.display !== 'none'
+    ? summarySectionBar.innerHTML
+    : '';
 
-// Funzione per generare dati ESC/POS per la ricevuta
-function generateReceiptData(cucinaItems, barItems, cucinaNumber, barNumber) {
-  let data = '\x1b@'; // Inizializza stampante
-
-  // Intestazione
-  data += '\x1ba\x01'; // Allinea centro
-  data += 'RIEPILOGO ORDINE\n\n';
-  data += '\x1ba\x00'; // Allinea sinistra
-
-  if (cucinaNumber) {
-    data += `Ordine Cucina N°${cucinaNumber}\n`;
-    cucinaItems.forEach(item => {
-      data += `${item.qty} x ${item.name}\n`;
-    });
-    data += '\n';
-  }
-
-  if (barNumber) {
-    data += `Ordine Bar N°${barNumber}\n`;
-    barItems.forEach(item => {
-      data += `${item.qty} x ${item.name}\n`;
-    });
-    data += '\n';
-  }
-
-  data += '\x1bd\x03'; // Taglia carta
-
-  return data;
-}
-
-// Funzione per stampare via RawBT
-async function printViaRawBT(cucinaItems, barItems, cucinaNumber, barNumber) {
-  const data = generateReceiptData(cucinaItems, barItems, cucinaNumber, barNumber);
-
-  try {
-    const response = await fetch(`http://${RAWBT_IP}:${RAWBT_PORT}/print`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/octet-stream'
-      },
-      body: data
-    });
-
-    if (!response.ok) {
-      throw new Error(`Errore HTTP: ${response.status}`);
-    }
-
-    console.log('Stampa inviata con successo a RawBT');
-  } catch (error) {
-    console.error('Errore nella stampa via RawBT:', error);
-    throw error;
-  }
-}
-
-summaryPrint.addEventListener('click', async () => {
-  try {
-    await printViaRawBT(
-      currentSummary.cucinaItems,
-      currentSummary.barItems,
-      currentSummary.cucinaNumber,
-      currentSummary.barNumber
-    );
-    alert('Stampa inviata con successo!');
-  } catch (error) {
-    console.error('Errore nella stampa:', error);
-    alert('Errore nella stampa: ' + error.message);
-  }
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html>
+    <head>
+      <title>Riepilogo Ordine</title>
+      <style>
+        body { font-family: sans-serif; padding:20px; }
+        h3 { margin-top:20px; }
+        table { width:100%; border-collapse:collapse; margin-top:8px; }
+        th, td { border:1px solid #ddd; padding:6px; text-align:left; }
+        th { background:#f0f0f0; }
+        .page-break { page-break-before: always; }
+      </style>
+    </head>
+    <body>
+      ${cucinaHTML ? `<div>${cucinaHTML}</div>` : ''}
+      ${barHTML ? `<div class="page-break">${barHTML}</div>` : ''}
+    </body>
+    </html>
+  `);
+  win.document.close();
+  // chiudi automaticamente dopo la stampa
+  win.onafterprint = () => win.close();
+  win.print();
 });
