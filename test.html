@@ -64,7 +64,187 @@ function printRawBt() {
 
 <button onclick="printRawBt()">Stampa</button>
 
-<a href="rawbt://print?text=Hello%20World">Stampa raw</a>
+<button onclick="sendHtmlToRawBT(sourceHtml);">Stampa raw</button>
+
+<script>
+const sourceHtml = `
+
+  <style>
+    body { font-family: sans-serif; padding:0;margin:0; }
+    h3 { margin-top:0 }
+    table { width:100%; border-collapse:collapse; margin-top:0px; }
+    th, td { border:1px solid #ddd; padding:2px; text-align:left; }
+    th { background:#f0f0f0; }
+    .page-break { page-break-before: always; }
+  </style>
+
+
+  <div>
+    <table class="report-table" style="width:100%; border-collapse:collapse;">
+      <thead>
+        <tr class="header-cucina">
+          <th>Cucina</th>
+          <th id="header-cucina-title" style="text-align: right;">N°56</th>
+          <th class="report-qty" style="text-align: center;">Quantità</th>
+        </tr>
+      </thead>
+      <tbody id="summary-cucina-body">
+        <tr>
+          <td style="padding:10px; border-bottom:1px solid #f0f0f0;" colspan="2">Panino gorgonzola</td>
+          <td style="padding:10px; text-align:center; border-bottom:1px solid #f0f0f0; font-weight:bold">1</td>
+        </tr>
+        <tr>
+          <td style="padding:10px; border-bottom:1px solid #f0f0f0;" colspan="2">Panino petto di pollo</td>
+          <td style="padding:10px; text-align:center; border-bottom:1px solid #f0f0f0; font-weight:bold">1</td>
+        </tr>
+        <tr>
+          <td style="padding:10px; border-bottom:1px solid #f0f0f0;" colspan="2">Bistecca di coppa</td>
+          <td style="padding:10px; text-align:center; border-bottom:1px solid #f0f0f0; font-weight:bold">1</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+ 
+`;
+
+function padRight(str, width) {
+  str = String(str ?? "");
+  return str.length >= width ? str.slice(0, width) : str + " ".repeat(width - str.length);
+}
+
+function padLeft(str, width) {
+  str = String(str ?? "");
+  return str.length >= width ? str.slice(0, width) : " ".repeat(width - str.length) + str;
+}
+
+function centerText(str, width) {
+  str = String(str ?? "");
+  if (str.length >= width) return str.slice(0, width);
+  const total = width - str.length;
+  const left = Math.floor(total / 2);
+  const right = total - left;
+  return " ".repeat(left) + str + " ".repeat(right);
+}
+
+function wrapText(text, width) {
+  const words = String(text ?? "").trim().split(/\s+/);
+  const lines = [];
+  let line = "";
+
+  for (const word of words) {
+    if (!line) {
+      line = word;
+    } else if ((line + " " + word).length <= width) {
+      line += " " + word;
+    } else {
+      lines.push(line);
+      line = word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
+}
+
+function textToCp1252Bytes(text) {
+  // Per caratteri italiani semplici spesso basta Latin-1 / CP1252.
+  // Se ti serve una codepage ESC/POS specifica, va gestita a parte.
+  const bytes = [];
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    bytes.push(code <= 255 ? code : 63); // 63 = '?'
+  }
+  return new Uint8Array(bytes);
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function htmlToReceiptText(html, paperWidth = 32) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+
+  const title = doc.querySelector("title")?.textContent?.trim() || "Ordine";
+  const reparto = doc.querySelector("thead th")?.textContent?.trim() || "Reparto";
+  const orderNo = doc.querySelector("#header-cucina-title")?.textContent?.trim() || "";
+  const rows = [...doc.querySelectorAll("#summary-cucina-body tr")];
+
+  const lineWidth = paperWidth;
+  const qtyWidth = 4;              // spazio per quantità
+  const separator = " ";
+  const itemWidth = lineWidth - qtyWidth - separator.length;
+
+  const out = [];
+
+  out.push(centerText(title.toUpperCase(), lineWidth));
+  out.push("-".repeat(lineWidth));
+  out.push(padRight(reparto, itemWidth) + separator + padLeft(orderNo, qtyWidth));
+  out.push("-".repeat(lineWidth));
+
+  for (const row of rows) {
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 2) continue;
+
+    const item = cells[0].textContent.trim().replace(/\s+/g, " ");
+    const qty = cells[cells.length - 1].textContent.trim().replace(/\s+/g, " ");
+
+    const wrapped = wrapText(item, itemWidth);
+
+    wrapped.forEach((line, index) => {
+      if (index === 0) {
+        out.push(padRight(line, itemWidth) + separator + padLeft(qty, qtyWidth));
+      } else {
+        out.push(line);
+      }
+    });
+  }
+
+  out.push("-".repeat(lineWidth));
+  out.push("");
+  out.push("");
+
+  return out.join("\n");
+}
+
+function buildEscPosPayload(receiptText) {
+  const escpos = [];
+
+  // ESC @ => init
+  escpos.push(0x1B, 0x40);
+
+  // opzionale: centrato + doppia altezza/larghezza per titolo
+  // qui manteniamo tutto semplice in testo normale
+
+  // Testo
+  const textBytes = textToCp1252Bytes(receiptText);
+  escpos.push(...textBytes);
+
+  // feed
+  escpos.push(0x0A, 0x0A, 0x0A);
+
+  // taglio carta (se supportato)
+  escpos.push(0x1D, 0x56, 0x00);
+
+  return new Uint8Array(escpos);
+}
+
+function sendHtmlToRawBT(html) {
+  const receiptText = htmlToReceiptText(html, 32);
+  console.log("Testo ricevuta:\n" + receiptText);
+
+  const payload = buildEscPosPayload(receiptText);
+  const b64 = bytesToBase64(payload);
+
+  // apre RawBT
+  window.location.href = "rawbt:base64," + encodeURIComponent(b64);
+}
+
+// avvio
+
+</script>
     </div>
 </body>
 </html>
