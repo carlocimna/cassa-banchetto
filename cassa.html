@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ordinazioni Evento</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div class="content">
+    <main>
+      <nav>
+        <button id="tab-cucina" class="tab active">Cucina</button>
+        <button id="tab-bar" class="tab">Bar</button>
+        <button id="customer-toggle" class="tab" style="margin-left:20px;">Cliente</button>
+      </nav>
+      <div class="products-grid" id="products-container">
+        <!-- Le card dei prodotti verranno inserite dinamicamente -->
+      </div>
+    </main>
+
+    <aside>
+      <nav>
+        <!--<a href="ordini.html" target="_blank" class="btn-secondary">Totale ordini</a>
+        <a href="gestione.html" target="_blank" class="btn-secondary">Gestione</a>-->
+        &nbsp;<br> &nbsp;
+      </nav>
+      <div class="summary-panel">
+      <h2>Riepilogo</h2>
+      <div class="summary-section">
+        <h3>Cucina</h3>
+        <ul id="summary-cucina"></ul>
+      </div>
+      <div class="summary-section">
+        <h3>Bar</h3>
+        <ul id="summary-bar"></ul>
+      </div>
+      <div class="summary-total">
+        Totale € <span id="total-amount">0,00</span>
+      </div>
+      <button id="checkout" class="btn">Cassa</button>
+    </div>
+    </aside>
+  </div>
+
+   <!-- Modal pagamento -->
+  <div id="payment-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Conferma Ordine</h2>
+
+      <div class="modal-layout" style="display:flex; gap:16px; align-items:flex-start;">
+        <!-- Colonna sinistra: riepilogo -->
+        <div class="modal-left" style="flex:1; min-width:0;">
+          <ul id="modal-items"></ul>
+          <div class="modal-total" style="margin-top:8px;">
+            Totale da pagare: € <span id="modal-total">0,00</span>
+          </div>
+          <div class="modal-change" style="margin-top:8px;">
+            <span id="change-message"></span>
+          </div>
+        </div>
+
+        <!-- Colonna destra: tastierino -->
+        <div class="modal-right">
+          <div class="cash-display" id="cash-display"
+               style="font-size:1.6rem; font-weight:600; text-align:right; padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+            € 0,00
+          </div>
+
+          <div id="keypad" class="keypad"
+               style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;">
+            <button class="key" data-key="7">7</button>
+            <button class="key" data-key="8">8</button>
+            <button class="key" data-key="9">9</button>
+
+            <button class="key" data-key="4">4</button>
+            <button class="key" data-key="5">5</button>
+            <button class="key" data-key="6">6</button>
+
+            <button class="key" data-key="1">1</button>
+            <button class="key" data-key="2">2</button>
+            <button class="key" data-key="3">3</button>
+
+            <button class="key" data-key="00">00</button>
+            <button class="key" data-key="0">0</button>
+            <button class="key" data-action="back">⌫</button>
+
+            <button class="key" data-action="clear">C</button>
+            <button id="btn-exact" class="key" style="width:248px; grid-column: span 2; font-size: 1.6rem;">
+              SOLDI GIUSTI
+            </button>
+          </div>
+        
+        </div> 
+      </div>
+      <div class="modal-actions" style="margin-top:12px;">
+        <button id="modal-edit" class="btn-secondary">Modifica</button>
+        <button id="modal-confirm" class="btn-primary" disabled>Conferma</button>
+      </div>
+
+      <button class="modal-close">×</button>
+    </div>
+  </div>
+<!-- Modal riepilogo post-incasso -->
+<div id="summary-modal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Riepilogo Ordine</h2>
+
+    <div class="summary-tables" style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+      <!-- Tabella Cucina -->
+      <div style="flex:1; min-width:260px; max-width: 460px;" id="summary-cucina-table">
+        <table class="report-table" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr class="header-cucina">
+              <th >Cucina</th>
+              <th id="header-cucina-title" style="text-align: right;"></th>
+              <th class="report-qty" style="text-align: center;">Quantità</th>
+            </tr>
+          </thead>
+          <tbody id="summary-cucina-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Tabella Bar -->
+      <div style="flex:1; min-width:260px; max-width: 460px;" id="summary-bar-table">
+        <table class="report-table" style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr class="header-bar">
+              <th >Bar</th>
+              <th id="header-bar-title" style="text-align: right;"></th>
+              <th class="report-qty" style="text-align: center;">Quantità</th>
+            </tr>
+          </thead>
+          <tbody id="summary-bar-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:14px; display:flex; gap:8px;">
+  <button id="summary-close" class="btn-primary">Chiudi</button>
+<button style=" ;" id="summary-print" class="btn-secondary">Ristampa</button>
+</div>
+
+
+    <button class="modal-close summary-x">×</button>
+  </div>
+</div>
+<!-- Loader overlay -->
+<div id="loader-overlay" class="hidden"
+     style="position:fixed; inset:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:2000;">
+  <div style="background:white; padding:20px 30px; border-radius:12px; font-size:1.3rem; box-shadow:0 2px 6px rgba(0,0,0,0.3);">
+    Salvataggio ordine in corso...
+  </div>
+</div>
+<script type="module" src="js/firebase-init.js"></script>
+  <script src="js/script.js"></script>
+
+
+</body>
+</html>

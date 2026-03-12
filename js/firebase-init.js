@@ -129,7 +129,8 @@ export async function getOrdersForDay(dateObj) {
       total: typeof d.total === "number" ? d.total : calcTotal(d.items || []),
       ts: d.createdAt,
       items: d.items || [],
-      deleted: d.deleted === true
+      deleted: d.deleted === true,
+      served: d.served === true
     });
   });
   snapCucina.forEach(docSnap => {
@@ -141,7 +142,8 @@ export async function getOrdersForDay(dateObj) {
       total: typeof d.total === "number" ? d.total : calcTotal(d.items || []),
       ts: d.createdAt,
       items: d.items || [],
-      deleted: d.deleted === true
+      deleted: d.deleted === true,
+      served: d.served === true
     });
   });
 
