@@ -1,0 +1,2 @@
+- sistemare il tasto "cliente / staff" e cambiare il colore giallo di riferimento in rosso più visibile
+- creare una pagina di gestione degli ordini cucina che faccia vedere gli ordini del giorno ancora in stato "da servire" che faccia refresh ogni tot in ricerca degli ordini

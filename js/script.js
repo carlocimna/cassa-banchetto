@@ -1,32 +1,53 @@
 // Definizione prodotti
 const products = {
   cucina: [
-    { id: 1, name: "Panino con salamella", price: 4.00, img: "salamella.jpg" },
-    { id: 2, name: "Panino salame della duja", price: 4.00, img: "salame.jpg" },
-    { id: 3, name: "Panino wurstel pollo/tacchino", price: 3.00, img: "wurstel.jpg" },
-    { id: 4, name: "Panino gorgonzola", price: 3.50, img: "gorgonzola.jpg" },
-    { id: 5, name: "Panino petto di pollo", price: 3.50, img: "tacchino.jpg" },
-    { id: 6, name: "Bistecca di coppa", price: 3.50, img: "bistecca.jpg" },
-    { id: 7, name: "Patatine", price: 3.00, img: "patatine.jpg" }
+    { id: 1, name: "Panino con salamella", price: 4.00, staffPrice: 2.00, img: "salamella.jpg" },
+    { id: 2, name: "Panino salame della duja", price: 4.00, staffPrice: 2.00, img: "salame.jpg" },
+    { id: 3, name: "Panino wurstel pollo/tacchino", price: 3.00, staffPrice: 1.50, img: "wurstel.jpg" },
+    { id: 4, name: "Panino gorgonzola", price: 3.50, staffPrice: 1.75, img: "gorgonzola.jpg" },
+    { id: 5, name: "Panino petto di pollo", price: 3.50, staffPrice: 1.75, img: "tacchino.jpg" },
+    { id: 6, name: "Bistecca di coppa", price: 3.50, staffPrice: 1.75, img: "bistecca.jpg" },
+    { id: 7, name: "Patatine", price: 3.00, staffPrice: 1.50, img: "patatine.jpg" }
   ],
   bar: [
-    { id: 8, name: "Caffè", price: 1.00, img: "caffe.jpg" },
-    { id: 9, name: "Acqua 0.5l", price: 1.00, img: "acqua.jpg" },
-    { id: 10, name: "Bibita in lattina", price: 2.50, img: "bibite.png" },
-    { id: 11, name: "Birra alla spina", price: 4.00, img: "birra.jpg" },
-    { id: 12, name: "Prosecco", price: 2.50, img: "prosecco.png" },
-    { id: 13, name: "Gelati", price: 2.00, img: "gelati.jpg" },
-    { id: 14, name: "Ghiaccioli", price: 1.00, img: "ghiaccioli.jpg" },
+    { id: 8, name: "Caffè", price: 1.00, staffPrice: 0.50, img: "caffe.jpg" },
+    { id: 9, name: "Acqua 0.5l", price: 1.00, staffPrice: 0.50, img: "acqua.jpg" },
+    { id: 10, name: "Bibita in lattina", price: 2.50, staffPrice: 1.25, img: "bibite.png" },
+    { id: 11, name: "Birra alla spina", price: 4.00, staffPrice: 2.00, img: "birra.jpg" },
+    { id: 12, name: "Prosecco", price: 2.50, staffPrice: 1.25, img: "prosecco.png" },
+    { id: 13, name: "Gelati", price: 2.00, staffPrice: 1.00, img: "gelati.jpg" },
+    { id: 14, name: "Ghiaccioli", price: 1.00, staffPrice: 0.50, img: "ghiaccioli.jpg" },
     
   ]
 };
 
 let currentTab = 'cucina';
+let customerType = 'cliente';           // 'cliente' o 'staff'
 const container = document.getElementById('products-container');
+const customerToggleBtn = document.getElementById('customer-toggle');
 // Stato selezione persistente
 const selection = {};
 
 // Eventi tab
+customerToggleBtn?.addEventListener('click', () => {
+  // flip tipo utente
+  customerType = customerType === 'cliente' ? 'staff' : 'cliente';
+  customerToggleBtn.textContent = customerType === 'staff' ? 'Staff' : 'Cliente';
+  customerToggleBtn.classList.toggle('active', customerType === 'staff');
+  // aggiorna prezzi nella selezione esistente
+  Object.keys(selection).forEach(id => {
+    const prod = [...products.cucina, ...products.bar].find(p => p.id == id);
+    if (prod) {
+      selection[id].price = customerType === 'staff' ? prod.staffPrice : prod.price;
+    }
+  });
+  renderProducts();
+});
+
+// inizializzazione aspetto toggle
+if (customerToggleBtn) {
+  customerToggleBtn.classList.toggle('active', customerType === 'staff');
+}
 document.getElementById('tab-cucina').addEventListener('click', () => switchTab('cucina'));
 document.getElementById('tab-bar').addEventListener('click', () => switchTab('bar'));
 
@@ -41,15 +62,16 @@ function switchTab(tab) {
 function renderProducts() {
   container.innerHTML = '';
   products[currentTab].forEach(p => {
+    const price = customerType === 'staff' ? p.staffPrice : p.price;
     const card = document.createElement('div');
     card.className = 'product-card';
     card.dataset.id = p.id;
-    card.dataset.price = p.price;
+    card.dataset.price = price;
     card.innerHTML = `
       <div class="check-icon">✓</div>
       <img src="images/${p.img}" alt="${p.name}">
       <h3>${p.name}</h3>
-      <p class="price">€ ${p.price.toFixed(2).replace('.', ',')}</p>
+      <p class="price">€ ${price.toFixed(2).replace('.', ',')}</p>
       <div class="quantity-controls">
         <button class="qty-btn minus">−</button>
         <span class="qty">1</span>
@@ -70,6 +92,13 @@ function renderProducts() {
 
 // Eventi su ogni card
 function attachCardEvents(card, product) {
+  // se il tipo utente cambia, aggiorniamo i prezzi degli elementi già selezionati
+  card.addEventListener('priceRefresh', () => {
+    const price = customerType === 'staff' ? product.staffPrice : product.price;
+    card.dataset.price = price;
+    card.querySelector('.price').textContent = `€ ${price.toFixed(2).replace('.', ',')}`;
+    if (selection[product.id]) selection[product.id].price = price;
+  });
   const qtySpan = card.querySelector('.qty');
   const minusBtn = card.querySelector('.minus');
   const plusBtn  = card.querySelector('.plus');
@@ -77,9 +106,10 @@ function attachCardEvents(card, product) {
   card.addEventListener('click', e => {
     if (e.target.closest('.qty-btn')) return;
     const id = product.id;
+    const price = customerType === 'staff' ? product.staffPrice : product.price;
     if (card.classList.toggle('selected')) {
-      // selezionato: salvo con qty corrente
-      selection[id] = { ...product, qty: parseInt(qtySpan.textContent, 10), category: currentTab };
+      // selezionato: salvo con qty corrente e prezzo attuale
+      selection[id] = { ...product, price, qty: parseInt(qtySpan.textContent, 10), category: currentTab };
     } else {
       delete selection[id];
       qtySpan.textContent = 1;
@@ -91,7 +121,12 @@ function attachCardEvents(card, product) {
     e.stopPropagation();
     let q = parseInt(qtySpan.textContent, 10) + 1;
     qtySpan.textContent = q;
-    selection[product.id] = { ...product, qty: q, category: currentTab };
+    if (selection[product.id]) {
+      selection[product.id].qty = q;
+    } else {
+      const price = customerType === 'staff' ? product.staffPrice : product.price;
+      selection[product.id] = { ...product, price, qty: q, category: currentTab };
+    }
     updateTotal(); renderSidebar();
   });
 
@@ -102,7 +137,7 @@ function attachCardEvents(card, product) {
       card.classList.remove('selected');
       delete selection[product.id];
       q = 1;
-    } else {
+    } else if (selection[product.id]) {
       selection[product.id].qty = q;
     }
     qtySpan.textContent = q;
