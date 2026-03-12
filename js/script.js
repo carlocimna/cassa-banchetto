@@ -34,6 +34,7 @@ customerToggleBtn?.addEventListener('click', () => {
   customerType = customerType === 'cliente' ? 'staff' : 'cliente';
   customerToggleBtn.textContent = customerType === 'staff' ? 'Staff' : 'Cliente';
   customerToggleBtn.classList.toggle('active', customerType === 'staff');
+  document.body.classList.toggle('staff-mode', customerType === 'staff');
   // aggiorna prezzi nella selezione esistente
   Object.keys(selection).forEach(id => {
     const prod = [...products.cucina, ...products.bar].find(p => p.id == id);
@@ -47,6 +48,7 @@ customerToggleBtn?.addEventListener('click', () => {
 // inizializzazione aspetto toggle
 if (customerToggleBtn) {
   customerToggleBtn.classList.toggle('active', customerType === 'staff');
+  document.body.classList.toggle('staff-mode', customerType === 'staff');
 }
 document.getElementById('tab-cucina').addEventListener('click', () => switchTab('cucina'));
 document.getElementById('tab-bar').addEventListener('click', () => switchTab('bar'));

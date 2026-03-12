@@ -19,6 +19,13 @@ nav {
   gap: 8px;
   justify-content: center;
 }
+:root {
+  --primary: #F5B32D;
+}
+body.staff-mode {
+  --primary: red;
+}
+
 .tab {
   border: none;
   padding: 12px 44px;
@@ -30,7 +37,7 @@ nav {
   font-weight: 500;
 }
 .tab.active {
-  background: #F5B32D;
+  background: var(--primary);
 }
 /* Container principale */
 .content {
@@ -87,7 +94,7 @@ th, td {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #F5B32D;
+  background: var(--primary);
   color: white;
   width: 24px;
   height: 24px;
@@ -96,7 +103,7 @@ th, td {
   display: none;
 }
 .product-card.selected {
-  border-color: #F5B32D;
+  border-color: var(--primary);
   border-width: 3px;
 }
 .product-card.selected .check-icon {
@@ -157,7 +164,7 @@ th, td {
   text-align: center;
 }
 #checkout {
-  background: #F5B32D;
+  background: var(--primary);
   border: none;
   padding: 12px 0;
   border-radius: 24px;
@@ -166,6 +173,14 @@ th, td {
   cursor: pointer;
   width: 100%;
 }
+/* Floating customer toggle */
+#customer-toggle {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1500;
+}
+
 /* Modal overlay */
 .modal {
   position: fixed;
@@ -248,7 +263,7 @@ button, a {
   font-weight: 500;
 }
 .btn-primary {
-  background: #F5B32D;
+  background: var(--primary);
   border: none;
   padding: 12px 30px;
   border-radius: 24px;
@@ -270,7 +285,7 @@ button, a {
 }
 .btn-secondary {
   background: #fff;
-  border: 1px solid #F5B32D;
+  border: 1px solid var(--primary);
   font-size: 1rem;
   font-weight: 500;
   padding: 12px 30px;
