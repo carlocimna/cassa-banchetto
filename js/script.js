@@ -3,7 +3,7 @@ const products = {
   cucina: [
     { id: 1, name: "Panino con salamella", price: 4.00, img: "salamella.jpg" },
     { id: 2, name: "Panino salame della duja", price: 4.00, img: "salame.jpg" },
-    { id: 3, name: "Panino würstel pollo/tacchino", price: 3.00, img: "wurstel.jpg" },
+    { id: 3, name: "Panino wurstel pollo/tacchino", price: 3.00, img: "wurstel.jpg" },
     { id: 4, name: "Panino gorgonzola", price: 3.50, img: "gorgonzola.jpg" },
     { id: 5, name: "Panino petto di pollo", price: 3.50, img: "tacchino.jpg" },
     { id: 6, name: "Bistecca di coppa", price: 3.50, img: "bistecca.jpg" },
@@ -167,6 +167,124 @@ const summarySectionCucina = document.getElementById('summary-cucina-table');
 const summarySectionBar    = document.getElementById('summary-bar-table');
 
 // (no global summary object needed when using standard print)
+
+// -----------------------------------------------------------------------------
+// utilities for RawBT printing (copiate da test.html)
+
+function padRight(str, width) {
+  str = String(str ?? "");
+  return str.length >= width ? str.slice(0, width) : str + " ".repeat(width - str.length);
+}
+
+function padLeft(str, width) {
+  str = String(str ?? "");
+  return str.length >= width ? str.slice(0, width) : " ".repeat(width - str.length) + str;
+}
+
+function centerText(str, width) {
+  str = String(str ?? "");
+  if (str.length >= width) return str.slice(0, width);
+  const total = width - str.length;
+  const left = Math.floor(total / 2);
+  const right = total - left;
+  return " ".repeat(left) + str + " ".repeat(right);
+}
+
+function wrapText(text, width) {
+  const words = String(text ?? "").trim().split(/\s+/);
+  const lines = [];
+  let line = "";
+
+  for (const word of words) {
+    if (!line) {
+      line = word;
+    } else if ((line + " " + word).length <= width) {
+      line += " " + word;
+    } else {
+      lines.push(line);
+      line = word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : [""];
+}
+
+function textToCp1252Bytes(text) {
+  const bytes = [];
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    bytes.push(code <= 255 ? code : 63);
+  }
+  return new Uint8Array(bytes);
+}
+
+function bytesToBase64(bytes) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function htmlToReceiptText(html, paperWidth = 32) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+
+  const title = doc.querySelector("title")?.textContent?.trim() || "Ordine";
+  const headerCells = [...doc.querySelectorAll("thead th")];
+  const reparto = headerCells[0]?.textContent?.trim() || "Reparto";
+  const orderNo = headerCells[1]?.textContent?.trim() || "";
+  const rows = [...doc.querySelectorAll("tbody tr")];
+
+  const lineWidth = paperWidth;
+  const qtyWidth = 4;
+  const separator = " ";
+  const itemWidth = lineWidth - qtyWidth - separator.length;
+
+  const out = [];
+
+  out.push(centerText(title.toUpperCase(), lineWidth));
+  out.push("-".repeat(lineWidth));
+  out.push(padRight(reparto, itemWidth) + separator + padLeft(orderNo, qtyWidth));
+  out.push("-".repeat(lineWidth));
+
+  for (const row of rows) {
+    const cells = row.querySelectorAll("td");
+    if (cells.length < 2) continue;
+
+    // rimuovi slash perché RawBT si confonde con "/" nella stampa
+    let item = cells[0].textContent.trim().replace(/\s+/g, " ");
+    item = item.replace(/\//g, "-");
+    const qty = cells[cells.length - 1].textContent.trim().replace(/\s+/g, " ");
+
+    const wrapped = wrapText(item, itemWidth);
+
+    wrapped.forEach((line, index) => {
+      if (index === 0) {
+        out.push(padRight(line, itemWidth) + separator + padLeft(qty, qtyWidth));
+      } else {
+        out.push(line);
+      }
+    });
+  }
+
+  out.push("-".repeat(lineWidth));
+  out.push("");
+  out.push("");
+
+  return out.join("\n");
+}
+
+function buildEscPosPayload(receiptText) {
+  const escpos = [];
+  escpos.push(0x1B, 0x40);
+  const textBytes = textToCp1252Bytes(receiptText);
+  escpos.push(...textBytes);
+  escpos.push(0x0A, 0x0A, 0x0A);
+  escpos.push(0x1D, 0x56, 0x00);
+  return new Uint8Array(escpos);
+}
+
+// -----------------------------------------------------------------------------
 
 
 function bufferToAmount() {
@@ -357,6 +475,10 @@ btnConfirm.addEventListener('click', async () => {
 
     // mostra riepilogo
     summaryModal.classList.remove('hidden');
+    // appena aperto, lancia la stampa automaticamente
+    if (typeof summaryPrint !== 'undefined') {
+      summaryPrint.click();
+    }
 
   } catch (err) {
     console.error("Errore salvataggio ordine:", err);
@@ -391,7 +513,28 @@ btnExact.addEventListener('click', () => {
 summaryClose.addEventListener('click', closeSummary);
 summaryX.addEventListener('click', closeSummary);
 // stampa standard del riepilogo, usa la modale generata
+// helper per inviare un blocco HTML alla stampante RawBT
+function printRawbtHtml(html) {
+  const receiptText = htmlToReceiptText(html, 32);
+  const payload = buildEscPosPayload(receiptText);
+  const b64 = bytesToBase64(payload);
+  window.location.href = "rawbt:base64," + encodeURIComponent(b64);
+}
+
+// helper per stampare due blocchi in un unico comando, mantenendo il taglio in mezzo
+function printRawbtTwo(html1, html2) {
+  const r1 = buildEscPosPayload(htmlToReceiptText(html1, 32));
+  const r2 = buildEscPosPayload(htmlToReceiptText(html2, 32));
+  // concateno i due array (entrambi già contengono un cut finale)
+  const combined = new Uint8Array(r1.length + r2.length);
+  combined.set(r1);
+  combined.set(r2, r1.length);
+  const b64 = bytesToBase64(combined);
+  window.location.href = "rawbt:base64," + encodeURIComponent(b64);
+}
+
 summaryPrint.addEventListener('click', () => {
+  // ottieni i pezzi di HTML dalle tabelle (se visibili)
   const cucinaHTML = summarySectionCucina.style.display !== 'none'
     ? summarySectionCucina.innerHTML
     : '';
@@ -399,31 +542,11 @@ summaryPrint.addEventListener('click', () => {
     ? summarySectionBar.innerHTML
     : '';
 
-  const win = window.open('', '_blank');
-  win.document.write(`
-    <html>
-    <head>
-      <title>Riepilogo Ordine</title>
-      <style>
-        body { font-family: sans-serif; padding:0;margin:0; }
-        h3 { margin-top:0 }
-        table { width:100%; border-collapse:collapse; margin-top:0px; }
-        th, td { border:1px solid #ddd; padding:2px; text-align:left; }
-        th { background:#f0f0f0; }
-        .page-break { page-break-before: always; }
-      </style>
-    </head>
-    <body>
-      ${cucinaHTML ? `<div>${cucinaHTML}</div>` : ''}
-      ${barHTML ? `<div class="page-break">${barHTML}</div>` : ''}
-    </body>
-    </html>
-  `);
-  win.document.close();
-  // aspetta 3 secondi prima di stampare
-  setTimeout(() => {
-    win.print();
-    // chiudi automaticamente dopo la stampa
-    win.onafterprint = () => win.close();
-  }, 3000);
+  if (cucinaHTML && barHTML) {
+    printRawbtTwo(`<div>${cucinaHTML}</div>`, `<div>${barHTML}</div>`);
+  } else if (cucinaHTML) {
+    printRawbtHtml(`<div>${cucinaHTML}</div>`);
+  } else if (barHTML) {
+    printRawbtHtml(`<div>${barHTML}</div>`);
+  }
 });
