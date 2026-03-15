@@ -17,7 +17,7 @@ const products = {
     { id: 12, name: "Prosecco", price: 2.50, staffPrice: 1.25, img: "prosecco.png" },
     { id: 13, name: "Gelati", price: 2.00, staffPrice: 1.00, img: "gelati.jpg" },
     { id: 14, name: "Ghiaccioli", price: 1.00, staffPrice: 0.50, img: "ghiaccioli.jpg" },
-    
+    { id: 15, name: "Bottiglia di prosecco", price: 7, staffPrice: 3.50, img: "prosecco_bottiglia.png" },
   ]
 };
 
@@ -279,7 +279,8 @@ function htmlToReceiptText(html, paperWidth = 32) {
 
   const out = [];
 
-  out.push(centerText(title.toUpperCase(), lineWidth));
+  // non serve il title
+  //out.push(centerText(title.toUpperCase(), lineWidth));
   out.push("-".repeat(lineWidth));
   out.push(padRight(reparto, itemWidth) + separator + padLeft(orderNo, qtyWidth));
   out.push("-".repeat(lineWidth));
@@ -308,12 +309,13 @@ function htmlToReceiptText(html, paperWidth = 32) {
   out.push("");
   out.push("");
 
-  return out.join("\n");
+  return out.join("\n").toUpperCase();
 }
 
-function buildEscPosPayload(receiptText) {
+function buildEscPosPayload(receiptText, fontSize = 0x01) {
   const escpos = [];
-  escpos.push(0x1B, 0x40);
+  escpos.push(0x1B, 0x40);  // Inizializza stampante
+  escpos.push(0x1D, 0x21, fontSize);  // Imposta dimensione font (GS ! n)
   const textBytes = textToCp1252Bytes(receiptText);
   escpos.push(...textBytes);
   escpos.push(0x0A, 0x0A, 0x0A);
@@ -552,7 +554,7 @@ summaryX.addEventListener('click', closeSummary);
 // stampa standard del riepilogo, usa la modale generata
 // helper per inviare un blocco HTML alla stampante RawBT
 function printRawbtHtml(html) {
-  const receiptText = htmlToReceiptText(html, 32);
+  const receiptText = htmlToReceiptText(html, 46);
   const payload = buildEscPosPayload(receiptText);
   const b64 = bytesToBase64(payload);
   window.location.href = "rawbt:base64," + encodeURIComponent(b64);
@@ -560,8 +562,8 @@ function printRawbtHtml(html) {
 
 // helper per stampare due blocchi in un unico comando, mantenendo il taglio in mezzo
 function printRawbtTwo(html1, html2) {
-  const r1 = buildEscPosPayload(htmlToReceiptText(html1, 32));
-  const r2 = buildEscPosPayload(htmlToReceiptText(html2, 32));
+  const r1 = buildEscPosPayload(htmlToReceiptText(html1, 46));
+  const r2 = buildEscPosPayload(htmlToReceiptText(html2, 46));
   // concateno i due array (entrambi già contengono un cut finale)
   const combined = new Uint8Array(r1.length + r2.length);
   combined.set(r1);
@@ -571,12 +573,14 @@ function printRawbtTwo(html1, html2) {
 }
 
 summaryPrint.addEventListener('click', () => {
+  const cucinaNumber = summaryTitleCucina.textContent.replace('N°', '');
+  const barNumber = summaryTitleBar.textContent.replace('N°', '');
   // ottieni i pezzi di HTML dalle tabelle (se visibili)
   const cucinaHTML = summarySectionCucina.style.display !== 'none'
-    ? summarySectionCucina.innerHTML
+    ? `${summarySectionCucina.innerHTML}`
     : '';
   const barHTML = summarySectionBar.style.display !== 'none'
-    ? summarySectionBar.innerHTML
+    ? `${summarySectionBar.innerHTML}`
     : '';
 
   if (cucinaHTML && barHTML) {
