@@ -421,3 +421,27 @@ button, a {
   font-size: 0.9rem;
   display: none;
 }
+
+
+@media screen and (max-width:992px) {
+  .content {
+    display: block;
+}
+.summary-panel {
+  width: 100%;
+}
+.products-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  
+}
+.modal-layout {
+  display: block !important;
+}
+.key {
+  width: 80px;
+}
+
+#btn-exact {
+width: 182px !important;
+}
+}
