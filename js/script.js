@@ -4,20 +4,20 @@ const products = {
     { id: 1, name: "Panino con salamella", price: 4.00, staffPrice: 2.00, img: "salamella.jpg" },
     { id: 2, name: "Panino salame della duja", price: 4.00, staffPrice: 2.00, img: "salame.jpg" },
     { id: 3, name: "Panino wurstel pollo/tacchino", price: 3.00, staffPrice: 1.50, img: "wurstel.jpg" },
-    { id: 4, name: "Panino gorgonzola", price: 3.50, staffPrice: 1.75, img: "gorgonzola.jpg" },
-    { id: 5, name: "Panino petto di pollo", price: 3.50, staffPrice: 1.75, img: "tacchino.jpg" },
-    { id: 6, name: "Bistecca di coppa", price: 3.50, staffPrice: 1.75, img: "bistecca.jpg" },
+    { id: 4, name: "Panino gorgonzola", price: 3.50, staffPrice: 2, img: "gorgonzola.jpg" },
+    { id: 5, name: "Panino petto di pollo", price: 3.50, staffPrice: 2, img: "tacchino.jpg" },
+    { id: 6, name: "Bistecca di coppa", price: 3.50, staffPrice: 2, img: "bistecca.jpg" },
     { id: 7, name: "Patatine", price: 3.00, staffPrice: 1.50, img: "patatine.jpg" }
   ],
   bar: [
-    { id: 8, name: "Caffè", price: 1.00, staffPrice: 0.50, img: "caffe.jpg" },
+    { id: 8, name: "Caffè", price: 1.00, staffPrice: 1, img: "caffe.jpg" },
     { id: 9, name: "Acqua 0.5l", price: 1.00, staffPrice: 0.50, img: "acqua.jpg" },
-    { id: 10, name: "Bibita in lattina", price: 2.50, staffPrice: 1.25, img: "bibite.png" },
+    { id: 10, name: "Bibita in lattina", price: 2.50, staffPrice: 1.5, img: "bibite.png" },
     { id: 11, name: "Birra alla spina", price: 4.00, staffPrice: 2.00, img: "birra.jpg" },
-    { id: 12, name: "Prosecco", price: 2.50, staffPrice: 1.25, img: "prosecco.png" },
-    { id: 13, name: "Gelati", price: 2.00, staffPrice: 1.00, img: "gelati.jpg" },
+    { id: 12, name: "Prosecco", price: 2.50, staffPrice: 2, img: "prosecco.png" },
+    { id: 13, name: "Gelati", price: 2.00, staffPrice: 2.00, img: "gelati.jpg" },
     { id: 14, name: "Ghiaccioli", price: 1.00, staffPrice: 0.50, img: "ghiaccioli.jpg" },
-    { id: 15, name: "Bottiglia di prosecco", price: 7, staffPrice: 3.50, img: "prosecco_bottiglia.png" },
+    { id: 15, name: "Bottiglia di prosecco", price: 8, staffPrice: 5, img: "prosecco_bottiglia.png" },
   ]
 };
 
