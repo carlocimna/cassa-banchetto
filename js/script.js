@@ -557,7 +557,7 @@ function printRawbtHtml(html) {
   const receiptText = htmlToReceiptText(html, 46);
   const payload = buildEscPosPayload(receiptText);
   const b64 = bytesToBase64(payload);
-  window.location.href = "rawbt:base64," + encodeURIComponent(b64);
+  window.location.href = "rawbt:base64," + b64;
 }
 
 // helper per stampare due blocchi in un unico comando, mantenendo il taglio in mezzo
@@ -569,7 +569,7 @@ function printRawbtTwo(html1, html2) {
   combined.set(r1);
   combined.set(r2, r1.length);
   const b64 = bytesToBase64(combined);
-  window.location.href = "rawbt:base64," + encodeURIComponent(b64);
+  window.location.href = "rawbt:base64," + b64;
 }
 
 summaryPrint.addEventListener('click', () => {
