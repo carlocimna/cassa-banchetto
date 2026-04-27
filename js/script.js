@@ -11,7 +11,7 @@ const products = {
   ],
   bar: [
     { id: 8, name: "Caffè", price: 1.00, staffPrice: 1, img: "caffe.jpg" },
-    { id: 9, name: "Acqua 0.5l", price: 1.00, staffPrice: 0.50, img: "acqua.jpg" },
+    { id: 9, name: "Acqua 0.5l", price: 1.00, staffPrice: 1, img: "acqua.jpg" },
     { id: 10, name: "Bibita in lattina", price: 2.50, staffPrice: 2, img: "bibite.png" },
     { id: 11, name: "Birra alla spina", price: 5.00, staffPrice: 2.50, img: "birra.jpg" },
     { id: 12, name: "Prosecco", price: 2.50, staffPrice: 2, img: "prosecco.png" },
