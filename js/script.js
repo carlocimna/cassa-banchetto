@@ -18,6 +18,7 @@ const products = {
     { id: 13, name: "Gelati", price: 2.00, staffPrice: 2.00, img: "gelati.jpg" },
     { id: 14, name: "Ghiaccioli", price: 1.00, staffPrice: 1.00, img: "ghiaccioli.jpg" },
     { id: 15, name: "Bottiglia di prosecco", price: 8, staffPrice: 5, img: "prosecco_bottiglia.png" },
+    { id: 16, name: "EstaTHE", price: 1.5, staffPrice: 1.5, img: "estathe.jpg" },
   ]
 };
 
