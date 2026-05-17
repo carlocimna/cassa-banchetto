@@ -248,6 +248,9 @@ function wrapText(text, width) {
 }
 
 function textToCp1252Bytes(text) {
+  // Rimuovi accenti e diacritici per compatibilità con stampante termica
+  text = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
   const bytes = [];
   for (let i = 0; i < text.length; i++) {
     const code = text.charCodeAt(i);
@@ -274,7 +277,7 @@ function htmlToReceiptText(html, paperWidth = 32) {
   const rows = [...doc.querySelectorAll("tbody tr")];
 
   const lineWidth = paperWidth;
-  const qtyWidth = 4;
+  const qtyWidth = 8;
   const separator = " ";
   const itemWidth = lineWidth - qtyWidth - separator.length;
 
