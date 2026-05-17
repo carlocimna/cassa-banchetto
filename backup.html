@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backup Database</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="js/auth.js"></script>
+  <style>
+    body { padding: 40px 20px; }
+    .log-area { 
+      background: #1e1e1e; 
+      color: #00ff00; 
+      padding: 15px; 
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      line-height: 1.5;
+    }
+    .btn-lg { font-size: 1.1rem; padding: 12px 30px; }
+    .stats-box {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 4px solid #0d6efd;
+    }
+    .stats-box strong { color: #0d6efd; }
+    .actions-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body class="container my-4">
+  <div class="row">
+    <div class="col-lg-10 mx-auto">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">💾 Backup Database</h3>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">
+            Esegui il backup completo del database Firebase e scarica i dati in formato JSON o CSV.
+          </p>
+
+          <div class="alert alert-info">
+            <strong>⚙️ Funzionalità:</strong>
+            <ul class="mb-0 mt-2">
+              <li>Backup di tutte le collezioni (orders, orders_bar, orders_cucina, counters)</li>
+              <li>Esportazione in <strong>JSON</strong> (completo, con tutti i dettagli)</li>
+              <li>Esportazione in <strong>CSV</strong> (riepilogo ordini, compatibile con Excel)</li>
+              <li>Timestamp automatico nei nomi dei file</li>
+              <li>Log in tempo reale del processo</li>
+            </ul>
+          </div>
+
+          <div class="actions-group">
+            <button id="btn-backup" class="btn btn-primary btn-lg">
+              🔄 Avvia Backup
+            </button>
+            <button id="btn-json" class="btn btn-success btn-lg" disabled>
+              📥 Scarica JSON
+            </button>
+            <button id="btn-csv" class="btn btn-warning btn-lg" disabled>
+              📊 Scarica CSV
+            </button>
+            <button id="btn-clear-log" class="btn btn-secondary btn-lg">
+              🗑️ Pulisci Log
+            </button>
+          </div>
+
+          <div id="stats-box" class="stats-box" style="display: none;">
+            <h5>📊 Risultati Backup</h5>
+            <div id="stats-content"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header bg-dark">
+              <small>Log Operazioni</small>
+            </div>
+            <div class="card-body p-0">
+              <div id="log-area" class="log-area">Pronto...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { backupDatabase, exportJSON, exportCSV } from './js/backup.js';
+
+    const logArea = document.getElementById('log-area');
+    const btnBackup = document.getElementById('btn-backup');
+    const btnJSON = document.getElementById('btn-json');
+    const btnCSV = document.getElementById('btn-csv');
+    const btnClear = document.getElementById('btn-clear-log');
+    const statsBox = document.getElementById('stats-box');
+    const statsContent = document.getElementById('stats-content');
+
+    let lastBackup = null;
+
+    // Intercetta console.log
+    const originalLog = console.log;
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      const msg = args.join(' ');
+      logArea.textContent += msg + '\n';
+      logArea.scrollTop = logArea.scrollHeight;
+    };
+
+    btnBackup.addEventListener('click', async () => {
+      btnBackup.disabled = true;
+      btnJSON.disabled = true;
+      btnCSV.disabled = true;
+      logArea.textContent = '';
+      statsBox.style.display = 'none';
+
+      try {
+        lastBackup = await backupDatabase();
+        
+        // Mostra statistiche
+        statsContent.innerHTML = `
+          <div class="row">
+            <div class="col-md-6">
+              <p><strong>Ordini Totali:</strong> ${lastBackup.stats.totalOrders}</p>
+              <p><strong>Ordini Bar:</strong> ${lastBackup.stats.totalOrdersBar}</p>
+              <p><strong>Ordini Cucina:</strong> ${lastBackup.stats.totalOrdersCucina}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Totale Documenti:</strong> ${lastBackup.stats.totalDocuments}</p>
+              <p><strong>Data/Ora:</strong> ${new Date(lastBackup.timestamp).toLocaleString('it-IT')}</p>
+            </div>
+          </div>
+        `;
+        statsBox.style.display = 'block';
+
+        // Abilita download
+        btnJSON.disabled = false;
+        btnCSV.disabled = false;
+
+      } catch (err) {
+        console.log(`❌ Errore: ${err.message}`);
+      } finally {
+        btnBackup.disabled = false;
+      }
+    });
+
+    btnJSON.addEventListener('click', () => {
+      if (lastBackup) {
+        exportJSON(lastBackup);
+      }
+    });
+
+    btnCSV.addEventListener('click', () => {
+      if (lastBackup) {
+        exportCSV(lastBackup);
+      }
+    });
+
+    btnClear.addEventListener('click', () => {
+      logArea.textContent = 'Pronto...';
+    });
+  </script>
+
+  <script type="module" src="js/firebase-init.js"></script>
+</body>
+</html>

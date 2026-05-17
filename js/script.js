@@ -480,6 +480,7 @@ async function processAndSaveOrder(selection) {
     qtyById,
     total, paid, change,
     status: "paid",
+    customerType,
     deviceTimeISO: new Date().toISOString()
   };
 

@@ -76,6 +76,7 @@ export async function saveSplitOrder(order) {
       parentOrderId: parentRef.id,
       items: barItems,
       total: calcTotal(barItems),
+      customerType: order.customerType,
       createdAt: serverTimestamp()
     });
     barTicket = { id: ref.id, number };
@@ -88,6 +89,7 @@ export async function saveSplitOrder(order) {
       parentOrderId: parentRef.id,
       items: cucinaItems,
       total: calcTotal(cucinaItems),
+      customerType: order.customerType,
       createdAt: serverTimestamp()
     });
     cucinaTicket = { id: ref.id, number };
@@ -129,6 +131,7 @@ export async function getOrdersForDay(dateObj) {
       total: typeof d.total === "number" ? d.total : calcTotal(d.items || []),
       ts: d.createdAt,
       items: d.items || [],
+      customerType: d.customerType || 'cliente',
       deleted: d.deleted === true,
       served: d.served === true
     });
@@ -142,6 +145,7 @@ export async function getOrdersForDay(dateObj) {
       total: typeof d.total === "number" ? d.total : calcTotal(d.items || []),
       ts: d.createdAt,
       items: d.items || [],
+      customerType: d.customerType || 'cliente',
       deleted: d.deleted === true,
       served: d.served === true
     });

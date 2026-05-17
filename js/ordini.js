@@ -45,6 +45,9 @@ function renderRows(rows) {
           <div class="d-flex justify-content-between w-100">
             <span>
               <strong>${r.type} #${r.number}</strong>
+              <span style="margin-left: 10px; font-size: 0.9rem; opacity: 0.7; text-transform: capitalize;">
+                (${r.customerType || 'cliente'})
+              </span>
             </span>
             <span>
               ${euro(r.total)} – ${hhmm(r.ts)}
@@ -112,6 +115,8 @@ function renderSummary(rows) {
             <tr><th>Totale incassato Bar</th><td>${euro(incassoBar)}</td></tr>
             <tr><th>Totale ordini Cucina</th><td>${ordiniCucina}</td></tr>
             <tr><th>Totale incassato Cucina</th><td>${euro(incassoCucina)}</td></tr>
+            <tr style="border-top: 2px solid #ddd; font-weight: bold;"><th>TOTALE ORDINI</th><td>${ordiniBar + ordiniCucina}</td></tr>
+            <tr style="font-weight: bold; background-color: #f0f0f0;"><th>TOTALE INCASSATO</th><td>${euro(incassoBar + incassoCucina)}</td></tr>
           </tbody>
         </table>
       </div>
