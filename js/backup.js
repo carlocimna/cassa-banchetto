@@ -103,21 +103,45 @@ export function exportCSV(backup) {
     ...backup.collections.orders_cucina.map(o => ({ ...o, type: 'CUCINA' }))
   ];
 
-  // Header CSV
-  const headers = ['type', 'number', 'total', 'customerType', 'createdAt', 'itemCount'];
+  // Header CSV con tutte le informazioni
+  const headers = ['type', 'number', 'total', 'customerType', 'createdAt', 'itemId', 'itemName', 'itemQty', 'itemPrice'];
   
   let csv = headers.join(',') + '\n';
 
   allOrders.forEach(order => {
-    const row = [
-      order.type,
-      order.number,
-      order.total,
-      order.customerType || 'cliente',
-      order.createdAt || '',
-      (order.items || []).length
-    ];
-    csv += row.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',') + '\n';
+    const items = order.items || [];
+    
+    if (items.length === 0) {
+      // Se nessun articolo, crea comunque una riga
+      const row = [
+        order.type,
+        order.number,
+        order.total,
+        order.customerType || 'cliente',
+        order.createdAt || '',
+        '',
+        '',
+        '',
+        ''
+      ];
+      csv += row.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',') + '\n';
+    } else {
+      // Una riga per ogni articolo
+      items.forEach(item => {
+        const row = [
+          order.type,
+          order.number,
+          order.total,
+          order.customerType || 'cliente',
+          order.createdAt || '',
+          item.id || '',
+          item.name || '',
+          item.qty || '',
+          item.price || ''
+        ];
+        csv += row.map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',') + '\n';
+      });
+    }
   });
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
